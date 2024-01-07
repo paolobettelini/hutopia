@@ -4,6 +4,10 @@ A user can host its own `space` server. <br>
 When the space server starts up, it loads the plugins from the `plugins` folder.
 
 # Compile
+Prerequisites:
+```bash
+cargo install cargo-leptos
+```
 Central server:
 ```bash
 cd hutopia-server-relay
