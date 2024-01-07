@@ -2,6 +2,7 @@
 
 # =============
 cargo_command="cargo b -j 1" # --release
+plugin_folder="../../hutopia-server-space/plugins"
 # =============
 
 # build the pkg using wasm-pack
@@ -36,4 +37,9 @@ compiled_so_file=$(echo "$build_output" | jq -r 'select(.filenames != null and (
 
 cd ..
 
-mv $compiled_so_file ../../hutopia-server-space/plugins
+mkdir -p $plugin_folder
+old_plugin="$plugin_folder/$(basename "$compiled_so_file")"
+if [ -f "$old_plugin" ]; then
+    rm -f "$old_plugin"
+fi
+mv $compiled_so_file $plugin_folder
