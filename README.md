@@ -1,6 +1,6 @@
 # Hutopia
-Hutopia is comprised of a centrla server: `relay`. <br>
-A user can host its own `space` server. <br>
+Hutopia is comprised of a central server: `relay`. <br>
+A user can host his own `space` server. <br>
 When the space server starts up, it loads the plugins from the `plugins` folder.
 
 # Compile
