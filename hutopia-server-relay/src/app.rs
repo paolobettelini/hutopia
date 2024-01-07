@@ -29,7 +29,7 @@ pub fn App() -> impl IntoView {
 
 fn ServerSpace() -> impl IntoView {
     let script = "
-        import init, { run } from 'http://localhost:8080/widget_file/example/example_plugin_client.js';
+        import init, { run } from 'http://localhost:8080/widget_file/chat/chat_plugin_client.js';
         async function main() {
             await init();
             run();

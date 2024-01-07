@@ -11,11 +11,11 @@ use hutopia_plugin_client::*;
 const CUSTOM_HTML_TAG: &'static str = "widget-chat";
 
 // The boring part: a basic DOM component
-struct ExampleComponent {
+struct ChatComponent {
     ws: Rc<WebSocket>
 }
 
-impl ExampleComponent {
+impl ChatComponent {
     fn new() -> Self {
         let ws = Rc::new(init_socket());
         
@@ -78,14 +78,14 @@ impl ExampleComponent {
     }
 }
 
-impl Default for ExampleComponent {
+impl Default for ChatComponent {
     fn default() -> Self {
         Self::new()
     }
 }
 
 // Here's the interesting part: configuring the Custom Element
-impl CustomElement for ExampleComponent {
+impl CustomElement for ChatComponent {
     fn inject_children(&mut self, this: &HtmlElement) {
         inject_style(&this, "p { color: green; }");
         let node = self.view();
@@ -123,13 +123,13 @@ impl CustomElement for ExampleComponent {
 #[wasm_bindgen]
 pub fn run() -> Result<(), JsValue> {
     // define the Custom Element
-    ExampleComponent::define(CUSTOM_HTML_TAG);
+    ChatComponent::define(CUSTOM_HTML_TAG);
 
     Ok(())
 }
 
 fn init_socket() -> WebSocket {
-    let ws = WebSocket::new("ws://localhost:8080/widget_ws/example").unwrap();
+    let ws = WebSocket::new("ws://localhost:8080/widget_ws/chat").unwrap();
     // For small binary messages, like CBOR, Arraybuffer is more efficient than Blob handling
     //ws.set_binary_type(web_sys::BinaryType::Arraybuffer);
     let cloned_ws = ws.clone();

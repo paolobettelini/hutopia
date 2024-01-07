@@ -13,7 +13,7 @@ use websocket::*;
 use chat::*;
 pub(crate) use actors_messages::*;
 
-const PLUGIN_ID: &str = "example";
+const PLUGIN_ID: &str = "chat";
 
 hutopia_plugin_server::export_plugin!(register);
 
@@ -22,7 +22,7 @@ extern "C" fn register(registrar: &mut dyn IPluginRegistrar) {
     let _  = System::new(); 
     let arbiter = Arbiter::new();
 
-    let pl = PluginExample { arbiter };
+    let pl = ChatPlugin { arbiter };
     registrar.register_plugin(PLUGIN_ID, Box::new(pl));
 }
 
@@ -38,11 +38,11 @@ pub(crate) fn handle_static_file(path: &str) -> Vec<u8> {
 }
 
 #[derive(Debug)]
-pub struct PluginExample {
+pub struct ChatPlugin {
     arbiter: Arbiter,
 }
 
-impl IPlugin for PluginExample {
+impl IPlugin for ChatPlugin {
     fn get_file(&self, file_name: &str) -> Vec<u8> {
         handle_static_file(&file_name)
     }

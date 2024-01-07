@@ -88,7 +88,7 @@ async fn serve_widget_file(
     let widget_name = format!("{}", params.0);
     let file_name = format!("{}", params.1);
 
-    // TODO: maybe directly register /widget_file/example/{file} at boot
+    // TODO: maybe directly register /widget_file/chat/{file} at boot
 
     let content = data
         .plugin_handler
