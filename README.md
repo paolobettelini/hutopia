@@ -35,3 +35,7 @@ Client-side widgets can open a socket on the space server, sending messages indi
 
 # Todo
 Force the nightly version for the entire project.
+
+The widget need to authenticate the user, access his usersname, profile picture and such.
+The widget needs to know the server IP and port to access websocket and such.
+The widget needs to access some global functions, like send notifications or play audio, and such.
