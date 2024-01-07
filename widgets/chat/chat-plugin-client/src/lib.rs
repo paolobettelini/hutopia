@@ -6,18 +6,9 @@ use wasm_bindgen::prelude::*;
 use web_sys::js_sys;
 use web_sys::{ErrorEvent, MessageEvent, WebSocket};
 use std::rc::Rc;
+use hutopia_plugin_client::*;
 
 const CUSTOM_HTML_TAG: &'static str = "widget-chat";
-
-macro_rules! console_log {
-    ($($t:tt)*) => (log(&format_args!($($t)*).to_string()))
-}
-
-#[wasm_bindgen]
-extern "C" {
-    #[wasm_bindgen(js_namespace = console)]
-    fn log(s: &str);
-}
 
 // The boring part: a basic DOM component
 struct ExampleComponent {

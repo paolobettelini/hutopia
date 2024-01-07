@@ -1,4 +1,4 @@
-use hutopia_plugin_core::*;
+use hutopia_plugin_server::*;
 use libloading::Library;
 use std::{collections::HashMap, ffi::OsStr, io, rc::Rc};
 use actix_web::Route;
@@ -23,7 +23,7 @@ impl PluginHandler {
     /// # Safety
     ///
     /// A plugin library **must** be implemented using the
-    /// [`plugin_core::plugin_declaration!()`] macro. Trying manually implement
+    /// [`hutopia_plugin_server::plugin_declaration!()`] macro. Trying manually implement
     /// a plugin without going through that macro will result in undefined
     /// behaviour.
     pub unsafe fn load<P: AsRef<OsStr>>(&mut self, library_path: P) -> io::Result<()> {
@@ -37,8 +37,8 @@ impl PluginHandler {
             .read();
 
         // version checks to prevent accidental ABI incompatibilities
-        if decl.rustc_version != hutopia_plugin_core::RUSTC_VERSION
-            || decl.core_version != hutopia_plugin_core::CORE_VERSION
+        if decl.rustc_version != hutopia_plugin_server::RUSTC_VERSION
+            || decl.core_version != hutopia_plugin_server::CORE_VERSION
         {
             return Err(io::Error::new(io::ErrorKind::Other, "Version mismatch"));
         }

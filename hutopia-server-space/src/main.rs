@@ -1,6 +1,6 @@
 use actix::{Actor, StreamHandler};
 use actix_web::{get, web, App, Error, HttpRequest, HttpResponse, HttpServer, Responder};
-use hutopia_plugin_core::IPlugin;
+use hutopia_plugin_server::IPlugin;
 use mime_guess::from_path;
 use std::alloc::System;
 

@@ -1,4 +1,4 @@
-use hutopia_plugin_core::*;
+use hutopia_plugin_server::*;
 use rust_embed::RustEmbed;
 use actix_web::{Route, web};
 use actix::{Actor};
@@ -15,7 +15,7 @@ pub(crate) use actors_messages::*;
 
 const PLUGIN_ID: &str = "example";
 
-hutopia_plugin_core::export_plugin!(register);
+hutopia_plugin_server::export_plugin!(register);
 
 extern "C" fn register(registrar: &mut dyn IPluginRegistrar) {
     // New system for Arbiter

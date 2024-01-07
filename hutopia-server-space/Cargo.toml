@@ -9,7 +9,7 @@ actix-rt = "2.9.0"
 actix-web = "4.4.1"
 actix-web-actors = "4.2.0"
 env_logger = "0.10.1"
-hutopia-plugin-core = { path = "../hutopia-plugin-core" }
+hutopia-plugin-server = { path = "../hutopia-plugin-server" }
 libloading = "0.8.1"
 log = "0.4.20"
 mime_guess = "2.0.4"

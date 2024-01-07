@@ -7,7 +7,7 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-hutopia-plugin-core = { path = "../../../hutopia-plugin-core" }
+hutopia-plugin-server = { path = "../../../hutopia-plugin-server" }
 chat-plugin-protocol = { path = "../chat-plugin-protocol" }
 log = "0.4.20"
 rust-embed = "8.2.0"
