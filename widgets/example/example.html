@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Custom Elements - Vanilla</title>
+    <script type="module">
+        import init, { run } from 'http://localhost:8080/widget_file/example/example_plugin_client.js';
+        async function main() {
+            await init();
+            run();
+        }
+        main();
+    </script>
+
+    <style>
+    /* This will only affect the paragraph outside the Web Components. */
+    p { color: blue; }
+    </style>
+</head>
+<body>
+    <p>This text should be blue, because it's not affected by the encapsulated style. (The counts should be green!)</p>
+    <custom-vanilla></custom-vanilla>
+    <custom-vanilla name="Alice"></custom-vanilla>
+    <custom-vanilla name="Bob"></custom-vanilla>
+    <custom-vanilla name="Charlie"></custom-vanilla>
+</body>
+</html>
