@@ -1,8 +1,7 @@
 # Hutopia
-Hutopia è suddiviso in un server centrale: `relay`. <br>
-Un utente può hostare il proprio `space`. <br>
-Quando il server dello space si avvia, carica i plugin. <br>
-I Plugin possono fornire varie pagine (`widget`).
+Hutopia is comprised of a centrla server: `relay`. <br>
+A user can host its own `space` server. <br>
+When the space server starts up, it loads the plugins from the `plugins` folder.
 
 # Compile
 Central server:
@@ -22,14 +21,13 @@ cargo r -r
 ```
 
 # Plugins
-I plugins sono caricati allo start del server mediante FFI.
+The plugins are loaded at the server start using FFI.
 
-Il codice client viene compilato con wasm-pack generando la cartella pkg/.
-Quando il codice server side compila, fa l'embedding pkg/ così può servire i file
+The client code is compiled with `wasm-pack`, generating the `pkg/` folder.
+When the server-side code compiles, it embeds `pkg/` so it can serve the files.
 
 # Websocket
-I widget client side possono aprire un socket sul server space,
-manda i messaggi indicando il widget di riferimento. Il server li manda al widget server side con FFI.
+Client-side widgets can open a socket on the space server, sending messages indicating the reference widget. The server forwards these messages to the server-side widget using FFI.
 
 # Todo
-Forzare il nightly per tutto il progetto
+Force the nightly version for the entire project.

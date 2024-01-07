@@ -41,7 +41,6 @@ fn HomePage() -> impl IntoView {
         <script type="module">
             {script}
         </script>
-        <p>This text should be black, because it s not affected by the encapsulated style. (The counts should be green!)</p>
         <custom-vanilla></custom-vanilla>
     }
 }
