@@ -15,20 +15,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
-name = "custom-elements"
-version = "0.2.0"
-source = "git+https://github.com/gbj/custom-elements/#50fab80c9b9863dfa4429449ba00308f29a3cfe7"
+name = "chat-plugin-client"
+version = "0.1.0"
 dependencies = [
- "js-sys",
+ "custom-elements",
  "wasm-bindgen",
  "web-sys",
 ]
 
 [[package]]
-name = "example-plugin-client"
-version = "0.1.0"
+name = "custom-elements"
+version = "0.2.0"
+source = "git+https://github.com/gbj/custom-elements/#50fab80c9b9863dfa4429449ba00308f29a3cfe7"
 dependencies = [
- "custom-elements",
+ "js-sys",
  "wasm-bindgen",
  "web-sys",
 ]

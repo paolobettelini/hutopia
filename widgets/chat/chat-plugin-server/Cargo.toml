@@ -1,5 +1,5 @@
 [package]
-name = "example-plugin-server"
+name = "chat-plugin-server"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,7 +8,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 hutopia-plugin-core = { path = "../../../hutopia-plugin-core" }
-example-plugin-protocol = { path = "../example-plugin-protocol" }
+chat-plugin-protocol = { path = "../chat-plugin-protocol" }
 log = "0.4.20"
 rust-embed = "8.2.0"
 actix = "0.13.1"

@@ -19,7 +19,7 @@ pub fn App() -> impl IntoView {
         <Router>
             <main>
                 <Routes>
-                    <Route path="" view=HomePage/>
+                    <Route path="" view=ServerSpace/>
                     <Route path="/*any" view=NotFound/>
                 </Routes>
             </main>
@@ -27,7 +27,7 @@ pub fn App() -> impl IntoView {
     }
 }
 
-fn HomePage() -> impl IntoView {
+fn ServerSpace() -> impl IntoView {
     let script = "
         import init, { run } from 'http://localhost:8080/widget_file/example/example_plugin_client.js';
         async function main() {

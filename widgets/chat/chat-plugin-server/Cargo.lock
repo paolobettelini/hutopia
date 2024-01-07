@@ -395,6 +395,30 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
+name = "chat-plugin-protocol"
+version = "0.1.0"
+dependencies = [
+ "protocol",
+ "protocol-derive",
+ "uuid 1.6.1",
+]
+
+[[package]]
+name = "chat-plugin-server"
+version = "0.1.0"
+dependencies = [
+ "actix",
+ "actix-rt",
+ "actix-web",
+ "actix-web-actors",
+ "chat-plugin-protocol",
+ "hutopia-plugin-core",
+ "log",
+ "rust-embed",
+ "uuid 1.6.1",
+]
+
+[[package]]
 name = "convert_case"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -513,30 +537,6 @@ checksum = "2d2f06b9cac1506ece98fe3231e3cc9c4410ec3d5b1f24ae1c8946f0742cdefc"
 dependencies = [
  "backtrace",
  "version_check",
-]
-
-[[package]]
-name = "example-plugin-protocol"
-version = "0.1.0"
-dependencies = [
- "protocol",
- "protocol-derive",
- "uuid 1.6.1",
-]
-
-[[package]]
-name = "example-plugin-server"
-version = "0.1.0"
-dependencies = [
- "actix",
- "actix-rt",
- "actix-web",
- "actix-web-actors",
- "example-plugin-protocol",
- "hutopia-plugin-core",
- "log",
- "rust-embed",
- "uuid 1.6.1",
 ]
 
 [[package]]
