@@ -48,8 +48,6 @@ impl IPlugin for PluginExample {
     }
 
     fn config(&self, cfg: &mut ServiceConfig) {
-        println!("Configuring plugin: {}", PLUGIN_ID);
-
         // Init sessions handler actor
         let addr = Chat::start_in_arbiter(&self.arbiter.handle(), |_| Chat::default());
 

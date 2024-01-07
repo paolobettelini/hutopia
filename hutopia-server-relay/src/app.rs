@@ -41,7 +41,8 @@ fn HomePage() -> impl IntoView {
         <script type="module">
             {script}
         </script>
-        <custom-vanilla></custom-vanilla>
+        <widget-chat></widget-chat>
+        <widget-chat></widget-chat>
     }
 }
 

@@ -7,6 +7,8 @@ use web_sys::js_sys;
 use web_sys::{ErrorEvent, MessageEvent, WebSocket};
 use std::rc::Rc;
 
+const CUSTOM_HTML_TAG: &'static str = "widget-chat";
+
 macro_rules! console_log {
     ($($t:tt)*) => (log(&format_args!($($t)*).to_string()))
 }
@@ -130,7 +132,7 @@ impl CustomElement for ExampleComponent {
 #[wasm_bindgen]
 pub fn run() -> Result<(), JsValue> {
     // define the Custom Element
-    ExampleComponent::define("custom-vanilla");
+    ExampleComponent::define(CUSTOM_HTML_TAG);
 
     Ok(())
 }

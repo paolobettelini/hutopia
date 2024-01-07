@@ -9,6 +9,7 @@ use plugins::*;
 
 const ADDRESS: (&'static str, u16) = ("0.0.0.0", 8080);
 const PLUGINS_FOLDER: &'static str = "./plugins";
+const LOG_ENV: &str = "RUST_LOG";
 
 #[global_allocator]
 static ALLOCATOR: System = System;
@@ -19,6 +20,12 @@ pub struct ServerData {
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
+    if std::env::var(LOG_ENV).is_err() {
+        std::env::set_var(LOG_ENV, "info");
+    }
+
+    env_logger::init();
+
     HttpServer::new(move || {
         let data = web::Data::new(get_data()); // Internally an Arc
 
@@ -70,8 +77,6 @@ fn get_data() -> ServerData {
         }
     }
 
-
-
     ServerData { plugin_handler }
 }
 
@@ -84,8 +89,6 @@ async fn serve_widget_file(
     let file_name = format!("{}", params.1);
 
     // TODO: maybe directly register /widget_file/example/{file} at boot
-
-    println!("Getting file {file_name} for {widget_name}");
 
     let content = data
         .plugin_handler

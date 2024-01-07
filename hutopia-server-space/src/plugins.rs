@@ -72,7 +72,7 @@ impl PluginRegistrar {
 
 impl IPluginRegistrar for PluginRegistrar {
     fn register_plugin(&mut self, name: &str, plugin: Box<dyn IPlugin>) {
-        println!("Loading plugin: {}", name);
+        log::info!("Loading plugin: {}", name);
         let proxy = PluginProxy {
             plugin,
             _lib: Rc::clone(&self.lib),
