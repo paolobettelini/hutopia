@@ -1,14 +1,10 @@
 use actix::{Actor, StreamHandler};
 use actix_web::{get, web, App, Error, HttpRequest, HttpResponse, HttpServer, Responder};
-use hutopia_plugin_server::IPlugin;
+use hutopia_plugin_server::*;
 use mime_guess::from_path;
 use std::alloc::System;
 
-mod plugins;
-use plugins::*;
-
 const ADDRESS: (&'static str, u16) = ("0.0.0.0", 8080);
-const PLUGINS_FOLDER: &'static str = "./plugins";
 const LOG_ENV: &str = "RUST_LOG";
 
 #[global_allocator]
@@ -39,9 +35,9 @@ async fn main() -> std::io::Result<()> {
             .service(serve_widget_file)
             .app_data(data.clone());
         
-        // Configure plugins
+        // Init plugins
         for plugin in data.plugin_handler.plugins.values() {
-            app = app.configure(|cfg| plugin.config(cfg));
+            app = app.configure(|cfg| plugin.init(cfg));
         }
 
         app
@@ -69,8 +65,8 @@ fn get_data() -> ServerData {
                 if file_path.ends_with(".so") {
                     unsafe {
                         plugin_handler
-                        .load(file_path)
-                        .expect("Plugin loading failed");
+                            .load(file_path)
+                            .expect("Plugin loading failed");
                     }
                 }
             }

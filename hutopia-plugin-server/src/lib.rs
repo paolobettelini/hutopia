@@ -1,13 +1,17 @@
 use actix_web::Route;
 use actix_web::web::ServiceConfig;
 
-pub mod utils;
+mod plugins;
+pub use plugins::*;
+pub mod config;
+
+pub const PLUGINS_FOLDER: &'static str = "./plugins";
 
 pub static CORE_VERSION: &str = env!("CARGO_PKG_VERSION");
 pub static RUSTC_VERSION: &str = env!("RUSTC_VERSION");
 
 pub trait IPlugin {
-    fn config(&self, cfg: &mut ServiceConfig);
+    fn init(&self, cfg: &mut ServiceConfig);
 
     fn get_file(&self, file_name: &str) -> Vec<u8>;
 }

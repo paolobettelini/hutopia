@@ -1,9 +1,8 @@
-use hutopia_plugin_server::*;
 use libloading::Library;
 use std::{collections::HashMap, ffi::OsStr, io, rc::Rc};
-use actix_web::Route;
 use std::sync::Arc;
 use actix_web::web::ServiceConfig;
+use crate::*;
 
 /// A map of the plugins.
 #[derive(Default)]
@@ -37,8 +36,8 @@ impl PluginHandler {
             .read();
 
         // version checks to prevent accidental ABI incompatibilities
-        if decl.rustc_version != hutopia_plugin_server::RUSTC_VERSION
-            || decl.core_version != hutopia_plugin_server::CORE_VERSION
+        if decl.rustc_version != RUSTC_VERSION
+            || decl.core_version != CORE_VERSION
         {
             return Err(io::Error::new(io::ErrorKind::Other, "Version mismatch"));
         }
@@ -94,7 +93,7 @@ impl IPlugin for PluginProxy {
         self.plugin.get_file(file_name)
     }
 
-    fn config(&self, cfg: &mut ServiceConfig) {
-        self.plugin.config(cfg)
+    fn init(&self, cfg: &mut ServiceConfig) {
+        self.plugin.init(cfg)
     }
 }
