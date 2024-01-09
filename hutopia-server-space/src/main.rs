@@ -1,13 +1,15 @@
 use actix::{Actor, StreamHandler};
 use actix_web::{get, web, App, Error, HttpRequest, HttpResponse, HttpServer, Responder};
 use hutopia_plugin_server::*;
+use hutopia_utils::config::*;
 use mime_guess::from_path;
 use std::alloc::System;
 
 mod init;
+mod config;
 use init::*;
+use config::*;
 
-pub const ADDRESS: (&'static str, u16) = ("0.0.0.0", 8080);
 pub const LOG_ENV: &str = "RUST_LOG";
 
 #[global_allocator]
@@ -21,6 +23,10 @@ pub struct ServerData {
 async fn main() -> std::io::Result<()> {
     init_logger();
     init_files();
+
+    let config: Box<SpaceConfig> = parse_toml_config("hutopia.toml").unwrap();
+
+    let bind_address = (config.server.address, config.server.port);
 
     HttpServer::new(move || {
         let data = web::Data::new(get_data()); // Internally an Arc
@@ -49,7 +55,7 @@ async fn main() -> std::io::Result<()> {
     // So, I use just 1 thread for the HttpServer.
     // `libloading::Library` cannot be shared between threads.
     .workers(1)
-    .bind(ADDRESS)?
+    .bind(bind_address)?
     .run()
     .await?;
 

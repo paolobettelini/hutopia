@@ -693,8 +693,10 @@ dependencies = [
  "anyhow",
  "env_logger",
  "hutopia-plugin-server",
+ "hutopia-utils",
  "log",
  "mime_guess",
+ "serde",
 ]
 
 [[package]]

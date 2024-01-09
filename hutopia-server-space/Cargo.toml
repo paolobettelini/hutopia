@@ -11,5 +11,7 @@ actix-web-actors = "4.2.0"
 anyhow = "1.0.79"
 env_logger = "0.10.1"
 hutopia-plugin-server = { path = "../hutopia-plugin-server" }
+hutopia-utils = { path = "../hutopia-utils" }
 log = "0.4.20"
 mime_guess = "2.0.4"
+serde = { version = "1.0.195",  features = ["derive"] }
