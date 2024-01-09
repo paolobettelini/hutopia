@@ -8,6 +8,7 @@ actix = "0.13.1"
 actix-rt = "2.9.0"
 actix-web = "4.4.1"
 actix-web-actors = "4.2.0"
+anyhow = "1.0.79"
 env_logger = "0.10.1"
 hutopia-plugin-server = { path = "../hutopia-plugin-server" }
 log = "0.4.20"

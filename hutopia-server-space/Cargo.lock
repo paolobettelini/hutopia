@@ -289,6 +289,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "anyhow"
+version = "1.0.79"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "080e9890a082662b09c1ad45f567faeeb47f22b5fb23895fbe1e651e718e25ca"
+
+[[package]]
 name = "autocfg"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -669,11 +675,11 @@ name = "hutopia-plugin-server"
 version = "0.1.0"
 dependencies = [
  "actix-web",
+ "hutopia-utils",
  "libloading",
  "log",
  "rustc_version",
  "serde",
- "toml",
 ]
 
 [[package]]
@@ -684,10 +690,19 @@ dependencies = [
  "actix-rt",
  "actix-web",
  "actix-web-actors",
+ "anyhow",
  "env_logger",
  "hutopia-plugin-server",
  "log",
  "mime_guess",
+]
+
+[[package]]
+name = "hutopia-utils"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "toml",
 ]
 
 [[package]]

@@ -4,8 +4,11 @@ use hutopia_plugin_server::*;
 use mime_guess::from_path;
 use std::alloc::System;
 
-const ADDRESS: (&'static str, u16) = ("0.0.0.0", 8080);
-const LOG_ENV: &str = "RUST_LOG";
+mod init;
+use init::*;
+
+pub const ADDRESS: (&'static str, u16) = ("0.0.0.0", 8080);
+pub const LOG_ENV: &str = "RUST_LOG";
 
 #[global_allocator]
 static ALLOCATOR: System = System;
@@ -16,11 +19,8 @@ pub struct ServerData {
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
-    if std::env::var(LOG_ENV).is_err() {
-        std::env::set_var(LOG_ENV, "info");
-    }
-
-    env_logger::init();
+    init_logger();
+    init_files();
 
     HttpServer::new(move || {
         let data = web::Data::new(get_data()); // Internally an Arc
