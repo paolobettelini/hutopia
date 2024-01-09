@@ -30,6 +30,11 @@ The plugins are loaded at the server start using FFI.
 The client code is compiled with `wasm-pack`, generating the `pkg/` folder.
 When the server-side code compiles, it embeds `pkg/` so it can serve the files.
 
+## Config
+Plugins may require a config file (possibly a `.toml`) to be placed aside its file.
+If the plugin needs to connect to a database, it will possibly read a `DATABASE_ADDRESS`
+variable, but it can be overwritten in the configuration file.
+
 # Websocket
 Client-side widgets can open a socket on the space server, sending messages indicating the reference widget. The server forwards these messages to the server-side widget using FFI.
 
