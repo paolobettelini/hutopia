@@ -560,8 +560,17 @@ name = "hutopia-plugin-server"
 version = "0.1.0"
 dependencies = [
  "actix-web",
+ "hutopia-utils",
+ "libloading",
  "log",
  "rustc_version",
+ "serde",
+]
+
+[[package]]
+name = "hutopia-utils"
+version = "0.1.0"
+dependencies = [
  "serde",
  "toml",
 ]
@@ -612,6 +621,16 @@ name = "libc"
 version = "0.2.152"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "13e3bf6590cbc649f4d1a3eefc9d5d6eb746f5200ffb04e5e142700b8faa56e7"
+
+[[package]]
+name = "libloading"
+version = "0.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c571b676ddfc9a8c12f1f3d3085a7b163966a8fd8098a90640953ce5f6170161"
+dependencies = [
+ "cfg-if",
+ "windows-sys",
+]
 
 [[package]]
 name = "local-channel"

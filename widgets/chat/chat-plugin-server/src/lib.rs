@@ -1,17 +1,17 @@
+use actix::Actor;
+use actix_rt::{Arbiter, System};
+use actix_web::web;
 use hutopia_plugin_server::*;
 use rust_embed::RustEmbed;
-use actix_web::{Route, web};
-use actix::{Actor};
-use actix_rt::{Arbiter, System};
-use std::sync::Arc;
+
 use actix_web::web::ServiceConfig;
 
-mod websocket;
-mod chat;
 mod actors_messages;
-use websocket::*;
-use chat::*;
+mod chat;
+mod websocket;
 pub(crate) use actors_messages::*;
+use chat::*;
+use websocket::*;
 
 const PLUGIN_ID: &str = "chat";
 
@@ -19,7 +19,7 @@ hutopia_plugin_server::export_plugin!(register);
 
 extern "C" fn register(registrar: &mut dyn IPluginRegistrar) {
     // New system for Arbiter
-    let _  = System::new(); 
+    let _ = System::new();
     let arbiter = Arbiter::new();
 
     let pl = ChatPlugin { arbiter };
@@ -47,7 +47,7 @@ impl IPlugin for ChatPlugin {
         handle_static_file(&file_name)
     }
 
-    fn config(&self, cfg: &mut ServiceConfig) {
+    fn init(&self, cfg: &mut ServiceConfig) {
         // Init sessions handler actor
         let addr = Chat::start_in_arbiter(&self.arbiter.handle(), |_| Chat::default());
 
@@ -55,8 +55,7 @@ impl IPlugin for ChatPlugin {
         let path = format!("/widget_ws/{}", PLUGIN_ID);
         let route = web::get().to(init_connection);
 
-        cfg
-            .route(&path, route)
+        cfg.route(&path, route)
             .app_data(web::Data::new(addr.clone()));
     }
 }

@@ -1,8 +1,8 @@
 use libloading::Library;
 use std::{collections::HashMap, ffi::OsStr, io, rc::Rc};
-use std::sync::Arc;
-use actix_web::web::ServiceConfig;
+
 use crate::*;
+use actix_web::web::ServiceConfig;
 
 /// A map of the plugins.
 #[derive(Default)]
@@ -36,9 +36,7 @@ impl PluginHandler {
             .read();
 
         // version checks to prevent accidental ABI incompatibilities
-        if decl.rustc_version != RUSTC_VERSION
-            || decl.core_version != CORE_VERSION
-        {
+        if decl.rustc_version != RUSTC_VERSION || decl.core_version != CORE_VERSION {
             return Err(io::Error::new(io::ErrorKind::Other, "Version mismatch"));
         }
 

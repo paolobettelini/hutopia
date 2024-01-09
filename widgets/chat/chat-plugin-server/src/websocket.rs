@@ -1,12 +1,11 @@
-use actix::{Actor, StreamHandler, Addr, Running, Handler, ActorFutureExt};
+use actix::{Actor, ActorFutureExt, Addr, Handler, Running, StreamHandler};
+use actix_web::{web, web::Data, Error, HttpRequest, HttpResponse};
 use actix_web_actors::ws;
-use actix_web::{get, web, web::Data, App, Error, HttpRequest, HttpResponse, HttpServer, Responder};
-use std::sync::{Arc, Mutex};
-use std::collections::HashMap;
-use actix::AsyncContext;
-use uuid::Uuid;
-use actix::{fut, ActorContext, ActorFuture, ContextFutureSpawner, WrapFuture};
+
 use crate::*;
+use actix::AsyncContext;
+use actix::{fut, ActorContext, ContextFutureSpawner, WrapFuture};
+use uuid::Uuid;
 
 /// Define HTTP actor
 struct WsConn {
@@ -36,9 +35,7 @@ impl Actor for WsConn {
     }
 
     fn stopping(&mut self, _: &mut Self::Context) -> Running {
-        self.chat.do_send(Disconnect {
-            id: self.id,
-        });
+        self.chat.do_send(Disconnect { id: self.id });
         Running::Stop
     }
 }
@@ -48,12 +45,10 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsConn {
     fn handle(&mut self, msg: Result<ws::Message, ws::ProtocolError>, ctx: &mut Self::Context) {
         match msg {
             Ok(ws::Message::Ping(msg)) => ctx.pong(&msg),
-            Ok(ws::Message::Text(text)) => {
-                self.chat.do_send(ClientActorMessage {
-                    id: self.id,
-                    msg: text.to_string(),
-                })
-            },
+            Ok(ws::Message::Text(text)) => self.chat.do_send(ClientActorMessage {
+                id: self.id,
+                msg: text.to_string(),
+            }),
             Ok(ws::Message::Binary(bin)) => ctx.binary(bin),
             _ => (),
         }
@@ -68,7 +63,11 @@ impl Handler<WsMessage> for WsConn {
     }
 }
 
-pub async fn init_connection(req: HttpRequest, stream: web::Payload, chat: Data<Addr<Chat>>) -> Result<HttpResponse, Error> {
+pub async fn init_connection(
+    req: HttpRequest,
+    stream: web::Payload,
+    chat: Data<Addr<Chat>>,
+) -> Result<HttpResponse, Error> {
     let handler = WsConn {
         id: Uuid::new_v4(),
         chat: chat.get_ref().clone(),

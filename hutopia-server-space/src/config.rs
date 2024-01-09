@@ -1,5 +1,4 @@
 use serde::Deserialize;
-use std::error::Error;
 
 #[derive(Deserialize, Debug)]
 pub struct SpaceConfig {

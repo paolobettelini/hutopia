@@ -1,6 +1,6 @@
+use crate::*;
 use std::fs;
 use std::io::Write;
-use crate::*;
 
 pub fn init_logger() {
     if std::env::var(LOG_ENV).is_err() {
@@ -27,8 +27,9 @@ pub fn init_files() {
 
                 // Add default file index.html
                 let mut file = fs::File::create("space/index.html").unwrap(); // TODO
-                file.write_all(include_bytes!("../space/index.html")).unwrap(); // TODO
-            },
+                file.write_all(include_bytes!("../space/index.html"))
+                    .unwrap(); // TODO
+            }
             Err(e) => log::warn!("Failed to create space folder: {}", e),
         }
     }

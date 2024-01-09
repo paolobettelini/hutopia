@@ -1,15 +1,14 @@
-use actix::{Actor, StreamHandler};
-use actix_web::{get, web, App, Error, HttpRequest, HttpResponse, HttpServer, Responder};
+use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
 use hutopia_plugin_server::*;
 use hutopia_utils::config::*;
 use mime_guess::from_path;
 use std::alloc::System;
 
-mod init;
 mod config;
+mod init;
 mod lib_ext;
-use init::*;
 use config::*;
+use init::*;
 use lib_ext::*;
 
 pub const LOG_ENV: &str = "RUST_LOG";
@@ -34,15 +33,19 @@ async fn main() -> std::io::Result<()> {
         let data = web::Data::new(get_data()); // Internally an Arc
 
         let mut app = App::new()
-            .wrap( // Set CORS headers
+            .wrap(
+                // Set CORS headers
                 actix_web::middleware::DefaultHeaders::new()
                     .add(("Access-Control-Allow-Origin", "*"))
-                    .add(("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS"))
-                    .add(("Access-Control-Allow-Headers", "Content-Type"))
+                    .add((
+                        "Access-Control-Allow-Methods",
+                        "GET, POST, PUT, DELETE, OPTIONS",
+                    ))
+                    .add(("Access-Control-Allow-Headers", "Content-Type")),
             )
             .service(serve_widget_file)
             .app_data(data.clone());
-        
+
         // Init plugins
         for plugin in data.plugin_handler.plugins.values() {
             app = app.configure(|cfg| plugin.init(cfg));
@@ -89,8 +92,8 @@ async fn serve_widget_file(
     data: web::Data<ServerData>,
     params: web::Path<(String, String)>,
 ) -> impl Responder {
-    let widget_name = format!("{}", params.0);
-    let file_name = format!("{}", params.1);
+    let widget_name = params.0.to_string();
+    let file_name = params.1.to_string();
 
     // TODO: maybe directly register /widget_file/chat/{file} at boot
 

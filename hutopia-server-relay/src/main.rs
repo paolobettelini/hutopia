@@ -1,5 +1,5 @@
-use hutopia_database_relay::db::*;
 use actix_web::middleware::DefaultHeaders;
+use hutopia_database_relay::db::*;
 
 const DB_CONNECTION_URL: &str = "postgresql://worker:pass@ip:5432/hutopia";
 
@@ -12,9 +12,9 @@ pub(crate) struct ServerData {
 async fn main() -> std::io::Result<()> {
     use actix_files::Files;
     use actix_web::*;
+    use hutopia_server_relay::app::*;
     use leptos::*;
     use leptos_actix::{generate_route_list, LeptosRoutes};
-    use hutopia_server_relay::app::*;
 
     let conf = get_configuration(None).await.unwrap();
     let addr = conf.leptos_options.site_addr;
@@ -31,8 +31,11 @@ async fn main() -> std::io::Result<()> {
                 DefaultHeaders::new()
                     // Set CORS headers
                     .add(("Access-Control-Allow-Origin", "*"))
-                    .add(("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS"))
-                    .add(("Access-Control-Allow-Headers", "Content-Type"))
+                    .add((
+                        "Access-Control-Allow-Methods",
+                        "GET, POST, PUT, DELETE, OPTIONS",
+                    ))
+                    .add(("Access-Control-Allow-Headers", "Content-Type")),
             )
             .route("/api/{tail:.*}", leptos_actix::handle_server_fns())
             // serve JS/WASM/CSS from `pkg`
@@ -43,7 +46,7 @@ async fn main() -> std::io::Result<()> {
             .service(favicon)
             .leptos_routes(leptos_options.to_owned(), routes.to_owned(), App)
             .app_data(web::Data::new(leptos_options.to_owned()))
-            //.app_data(web::Data::new(get_server_data()))
+        //.app_data(web::Data::new(get_server_data()))
         //.wrap(middleware::Compress::default())
     })
     .bind(&addr)?
@@ -82,8 +85,8 @@ pub fn main() {
     // a client-side main function is required for using `trunk serve`
     // prefer using `cargo leptos serve` instead
     // to run: `trunk serve --open --features csr`
-    use leptos::*;
     use hutopia_server_relay::app::*;
+    use leptos::*;
     use wasm_bindgen::prelude::wasm_bindgen;
 
     console_error_panic_hook::set_once();

@@ -1,12 +1,10 @@
-use actix::{Actor, StreamHandler, Addr, Recipient, Handler};
-use actix_web_actors::ws;
-use actix_web::{get, web, App, Error, HttpRequest, HttpResponse, HttpServer, Responder};
-use std::sync::{Arc, Mutex};
-use std::collections::HashMap;
+use actix::{Actor, Handler, Recipient};
+
 use actix::Context;
-use actix::AsyncContext;
-use uuid::Uuid;
+use std::collections::HashMap;
+
 use crate::*;
+use uuid::Uuid;
 
 type Socket = Recipient<WsMessage>;
 
@@ -28,8 +26,7 @@ impl Chat {
     // TODO modify to "broadcast".
     fn send_message(&self, message: &str, id_to: &Uuid) {
         if let Some(socket_recipient) = self.sessions.get(id_to) {
-            let _ = socket_recipient
-                .do_send(WsMessage(message.to_owned()));
+            let _ = socket_recipient.do_send(WsMessage(message.to_owned()));
 
             println!("Sending message {message} to {id_to}");
         } else {
@@ -46,9 +43,7 @@ impl Handler<Disconnect> for Chat {
     type Result = ();
 
     fn handle(&mut self, msg: Disconnect, _: &mut Context<Self>) {
-        if self.sessions.remove(&msg.id).is_some() {
-
-        }
+        if self.sessions.remove(&msg.id).is_some() {}
     }
 }
 
@@ -56,10 +51,7 @@ impl Handler<Connect> for Chat {
     type Result = ();
 
     fn handle(&mut self, msg: Connect, _: &mut Context<Self>) -> Self::Result {
-        self.sessions.insert(
-            msg.id,
-            msg.addr,
-        );
+        self.sessions.insert(msg.id, msg.addr);
 
         self.send_message(&format!("your id is {}", msg.id), &msg.id);
     }
@@ -69,8 +61,7 @@ impl Handler<ClientActorMessage> for Chat {
     type Result = ();
 
     fn handle(&mut self, msg: ClientActorMessage, _ctx: &mut Context<Self>) -> Self::Result {
-        self
-            .sessions
+        self.sessions
             .iter()
             .for_each(|client| self.send_message(&msg.msg, client.0));
     }

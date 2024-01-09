@@ -1,7 +1,7 @@
-use std::error::Error;
 use crate::PLUGINS_FOLDER;
-use serde::Deserialize;
 use hutopia_utils::config::parse_toml_config;
+use serde::Deserialize;
+use std::error::Error;
 
 pub fn parse_plugin_toml_config<ConfigType: for<'a> Deserialize<'a>>(
     plugin_name: &str,

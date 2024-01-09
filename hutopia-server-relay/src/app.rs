@@ -36,7 +36,7 @@ fn ServerSpace() -> impl IntoView {
         }
         main();
     ";
-    
+
     view! {
         <script type="module">
             {script}

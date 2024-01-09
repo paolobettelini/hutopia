@@ -1,24 +1,24 @@
 use custom_elements::{inject_style, CustomElement};
+use hutopia_plugin_client::*;
+use std::rc::Rc;
+use wasm_bindgen::prelude::*;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
-use web_sys::{window, HtmlElement, Node, Text, Event};
-use wasm_bindgen::prelude::*;
 use web_sys::js_sys;
+use web_sys::{window, Event, HtmlElement, Node, Text};
 use web_sys::{ErrorEvent, MessageEvent, WebSocket};
-use std::rc::Rc;
-use hutopia_plugin_client::*;
 
 const CUSTOM_HTML_TAG: &'static str = "widget-chat";
 
 // The boring part: a basic DOM component
 struct ChatComponent {
-    ws: Rc<WebSocket>
+    ws: Rc<WebSocket>,
 }
 
 impl ChatComponent {
     fn new() -> Self {
         let ws = Rc::new(init_socket());
-        
+
         Self { ws }
     }
 
@@ -51,11 +51,12 @@ impl ChatComponent {
             let _ = ws.send_with_str(&msg);
         }) as Box<dyn FnMut(Event)>);
         // Forget the closure to avoid dropping it prematurely
-    
+
         // Add the onclick event listener to the button
         btn.set_attribute("onclick", "").unwrap();
-        btn.add_event_listener_with_callback("click", onclick.as_ref().unchecked_ref()).unwrap();
-    
+        btn.add_event_listener_with_callback("click", onclick.as_ref().unchecked_ref())
+            .unwrap();
+
         // Receive messages
 
         let onmessage_callback = Closure::<dyn FnMut(_)>::new(move |e: MessageEvent| {
@@ -69,8 +70,9 @@ impl ChatComponent {
                 console_log!("Received text: {:?}", msg);
             }
         });
-        self.ws.set_onmessage(Some(onmessage_callback.as_ref().unchecked_ref()));
-        
+        self.ws
+            .set_onmessage(Some(onmessage_callback.as_ref().unchecked_ref()));
+
         onmessage_callback.forget();
         onclick.forget();
 
