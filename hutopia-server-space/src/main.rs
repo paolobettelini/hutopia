@@ -7,8 +7,10 @@ use std::alloc::System;
 
 mod init;
 mod config;
+mod lib_ext;
 use init::*;
 use config::*;
+use lib_ext::*;
 
 pub const LOG_ENV: &str = "RUST_LOG";
 
@@ -68,7 +70,7 @@ fn get_data() -> ServerData {
     if let Ok(entries) = std::fs::read_dir(PLUGINS_FOLDER) {
         for entry in entries.flatten() {
             if let Ok(file_path) = entry.path().into_os_string().into_string() {
-                if file_path.ends_with(".so") {
+                if file_path.ends_with(LIB_EXTENSION) {
                     unsafe {
                         plugin_handler
                             .load(file_path)
