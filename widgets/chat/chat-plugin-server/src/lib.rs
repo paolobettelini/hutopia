@@ -3,6 +3,7 @@ use actix_rt::{Arbiter, System};
 use actix_web::web;
 use hutopia_plugin_server::*;
 use rust_embed::RustEmbed;
+use chat_plugin_database::db::Database;
 
 use actix_web::web::ServiceConfig;
 
@@ -49,7 +50,13 @@ impl IPlugin for ChatPlugin {
 
     fn init(&self, cfg: &mut ServiceConfig) {
         // Init sessions handler actor
-        let addr = Chat::start_in_arbiter(&self.arbiter.handle(), |_| Chat::default());
+        let addr = Chat::start_in_arbiter(&self.arbiter.handle(), |_| {
+            // init db
+            // TODO read env
+            let url = String::from("postgres://worker:WorkerPass@bettelini.internet-box.ch:6666/hutopia");
+            let db = Database::new(url);
+            Chat::new(db, Default::default())
+        });
 
         // Plugin Websocket route
         let path = format!("/widget_ws/{}", PLUGIN_ID);

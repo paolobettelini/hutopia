@@ -8,22 +8,18 @@ use uuid::Uuid;
 
 type Socket = Recipient<WsMessage>;
 
-#[derive(Debug, PartialEq)]
 pub struct Chat {
+    database: Database,
     sessions: HashMap<Uuid, Socket>,
     // channels: HashMap<Uuid, HashSet<Uuid>>,
 }
 
-impl Default for Chat {
-    fn default() -> Self {
-        Self {
-            sessions: HashMap::new(),
-        }
-    }
-}
-
 impl Chat {
-    // TODO modify to "broadcast".
+
+    pub fn new(database: Database, sessions: HashMap<Uuid, Socket>) -> Self {
+        Self { database, sessions }
+    }
+
     fn send_message(&self, message: &str, id_to: &Uuid) {
         if let Some(socket_recipient) = self.sessions.get(id_to) {
             let _ = socket_recipient.do_send(WsMessage(message.to_owned()));

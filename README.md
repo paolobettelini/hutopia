@@ -8,7 +8,7 @@ Prerequisites:
 ```bash
 cargo install cargo-leptos
 sudo pacman -S wasm-pack
-cargo install diesel_cli --no-default-features --features postgres
+sudo pacman -S diesel-cli
 ```
 Central server:
 ```bash
