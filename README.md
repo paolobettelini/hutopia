@@ -7,6 +7,8 @@ When the space server starts up, it loads the plugins from the `plugins` folder.
 Prerequisites:
 ```bash
 cargo install cargo-leptos
+sudo pacman -S wasm-pack
+cargo install diesel_cli --no-default-features --features postgres
 ```
 Central server:
 ```bash
