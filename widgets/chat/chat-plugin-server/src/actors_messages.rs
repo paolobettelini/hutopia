@@ -1,5 +1,5 @@
 use actix::{Message, Recipient};
-use uuid::Uuid;
+use chat_plugin_protocol::uuid::Uuid;
 
 #[derive(Message)]
 #[rtype(result = "()")]

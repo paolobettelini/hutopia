@@ -7,6 +7,11 @@ use wasm_bindgen::JsCast;
 use web_sys::js_sys;
 use web_sys::{window, Event, HtmlElement, Node, Text};
 use web_sys::{ErrorEvent, MessageEvent, WebSocket};
+use chat_plugin_protocol as protocol;
+use protocol::*;
+use uuid::Uuid;
+use chat_plugin_protocol::protocol::{Parcel, Settings};
+use protocol::message::*;
 
 const CUSTOM_HTML_TAG: &'static str = "widget-chat";
 
@@ -48,7 +53,11 @@ impl ChatComponent {
         let onclick = Closure::wrap(Box::new(move |_event: Event| {
             let msg = input_cast.value();
             input_cast.set_value("");
-            let _ = ws.send_with_str(&msg);
+
+            // Send SendMsg packet
+            let packet = ProtocolMessage::ServerBound(ServerBoundPacket::SendMsg(msg));
+            let bytes = packet.raw_bytes(&Settings::default()).unwrap();
+            let _ = ws.send_with_u8_array(&bytes);
         }) as Box<dyn FnMut(Event)>);
         // Forget the closure to avoid dropping it prematurely
 
@@ -60,6 +69,7 @@ impl ChatComponent {
         // Receive messages
 
         let onmessage_callback = Closure::<dyn FnMut(_)>::new(move |e: MessageEvent| {
+            // XX TODO: we are gona receive bytes, not strings
             if let Ok(msg) = e.data().dyn_into::<js_sys::JsString>() {
                 let msg = format!("{msg}");
                 let txt_node = document.create_text_node(&msg);
@@ -185,15 +195,14 @@ fn init_socket() -> WebSocket {
     let onopen_callback = Closure::<dyn FnMut()>::new(move || {
         console_log!("socket opened");
 
-        //let _ = cloned_ws.send_with_str("Hello from the client. Can you hear me 1?");
-        //let _ = cloned_ws.send_with_str("Hello from the client. Can you hear me 2?");
-        //let _ = cloned_ws.send_with_str("Hello from the client. Can you hear me 3?");
+        // TOOD: Connect packet
+        let uuid = Uuid::new_v4();
+        console_log!("Generating UUID: {uuid}");
 
-        // send off binary message
-        //match cloned_ws.send_with_u8_array(&[0, 1, 2, 3]) {
-        //    Ok(_) => console_log!("binary message successfully sent"),
-        //    Err(err) => console_log!("error sending message: {:?}", err),
-        //}
+        let ser = SerializableUuid(uuid.clone());
+        let packet = ProtocolMessage::ServerBound(ServerBoundPacket::Connect(ser));
+        let bytes = packet.raw_bytes(&Settings::default()).unwrap();
+        let _ = cloned_ws.send_with_u8_array(&bytes);
     });
     ws.set_onopen(Some(onopen_callback.as_ref().unchecked_ref()));
     onopen_callback.forget();

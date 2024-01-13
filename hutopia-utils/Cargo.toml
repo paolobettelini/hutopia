@@ -6,3 +6,5 @@ edition = "2021"
 [dependencies]
 toml = "0.8.8"
 serde = "1.0.195"
+protocol = { version = "3.4.0" }
+uuid = { version = "1.6" }

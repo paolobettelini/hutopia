@@ -4,7 +4,7 @@ use actix::Context;
 use std::collections::HashMap;
 
 use crate::*;
-use uuid::Uuid;
+use chat_plugin_protocol::uuid::Uuid;
 
 type Socket = Recipient<WsMessage>;
 
@@ -47,6 +47,7 @@ impl Handler<Connect> for Chat {
     type Result = ();
 
     fn handle(&mut self, msg: Connect, _: &mut Context<Self>) -> Self::Result {
+        println!("Inserting session");
         self.sessions.insert(msg.id, msg.addr);
 
         self.send_message(&format!("your id is {}", msg.id), &msg.id);

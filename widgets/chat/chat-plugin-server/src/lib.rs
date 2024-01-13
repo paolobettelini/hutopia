@@ -53,7 +53,7 @@ impl IPlugin for ChatPlugin {
         let addr = Chat::start_in_arbiter(&self.arbiter.handle(), |_| {
             // init db
             // TODO read env
-            let url = String::from("postgres://worker:WorkerPass@bettelini.internet-box.ch:6666/hutopia");
+            let url = String::from("XXX");
             let db = Database::new(url);
             Chat::new(db, Default::default())
         });
