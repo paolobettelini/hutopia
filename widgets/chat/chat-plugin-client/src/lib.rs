@@ -12,6 +12,7 @@ use protocol::*;
 use uuid::Uuid;
 use chat_plugin_protocol::protocol::{Parcel, Settings};
 use protocol::message::*;
+use chat_plugin_protocol::message::ProtocolMessage::ClientBound;
 
 const CUSTOM_HTML_TAG: &'static str = "widget-chat";
 
@@ -69,15 +70,22 @@ impl ChatComponent {
         // Receive messages
 
         let onmessage_callback = Closure::<dyn FnMut(_)>::new(move |e: MessageEvent| {
-            // XX TODO: we are gona receive bytes, not strings
-            if let Ok(msg) = e.data().dyn_into::<js_sys::JsString>() {
-                let msg = format!("{msg}");
-                let txt_node = document.create_text_node(&msg);
+            if let Ok(abuf) = e.data().dyn_into::<js_sys::ArrayBuffer>() {
+                let array = js_sys::Uint8Array::new(&abuf);
+                let vec = array.to_vec(); // TODO maybe use something that doesn't copy it?
+                let message = {
+                    let settings = &Settings::default();
+                    let res = ProtocolMessage::from_raw_bytes(&vec, settings);
+                    res.unwrap()
+                };
 
-                msg_container.append_child(&txt_node).unwrap();
-                msg_container.append_child(&document.create_element("br").unwrap());
-
-                console_log!("Received text: {:?}", msg);
+                if let ProtocolMessage::ClientBound(ClientBoundPacket::ServeMsg(id, msg)) = message {
+                    let msg = format!("{:?}: {msg}", id.0);
+                    let txt_node = document.create_text_node(&msg);
+    
+                    msg_container.append_child(&txt_node).unwrap();
+                    msg_container.append_child(&document.create_element("br").unwrap());
+                }
             }
         });
         self.ws
@@ -142,8 +150,8 @@ pub fn run() -> Result<(), JsValue> {
 
 fn init_socket() -> WebSocket {
     let ws = WebSocket::new("ws://localhost:8080/widget_ws/chat").unwrap();
-    // For small binary messages, like CBOR, Arraybuffer is more efficient than Blob handling
-    //ws.set_binary_type(web_sys::BinaryType::Arraybuffer);
+    // TODO: you should switch to blob type for big transfers like files
+    ws.set_binary_type(web_sys::BinaryType::Arraybuffer);
     let cloned_ws = ws.clone();
     /*let onmessage_callback = Closure::<dyn FnMut(_)>::new(move |e: MessageEvent| {
         // Handle difference Text/Binary,...

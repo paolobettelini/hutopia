@@ -114,8 +114,9 @@ impl Handler<WsMessage> for WsConn {
     type Result = ();
 
     fn handle(&mut self, msg: WsMessage, ctx: &mut Self::Context) {
-        println!("Sending msg to client: {}", msg.0);
-        ctx.text(msg.0);
+        let packet = msg.0;
+        let bytes = packet.raw_bytes(&Settings::default()).unwrap();
+        ctx.binary(bytes);
     }
 }
 

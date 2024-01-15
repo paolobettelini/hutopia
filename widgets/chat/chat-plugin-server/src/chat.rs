@@ -5,6 +5,9 @@ use std::collections::HashMap;
 
 use crate::*;
 use chat_plugin_protocol::uuid::Uuid;
+use chat_plugin_protocol::message::*;
+use chat_plugin_protocol::message::ClientBoundPacket::ServeMsg;
+use chat_plugin_protocol::SerializableUuid;
 
 type Socket = Recipient<WsMessage>;
 
@@ -20,9 +23,11 @@ impl Chat {
         Self { database, sessions }
     }
 
-    fn send_message(&self, message: &str, id_to: &Uuid) {
+    fn send_message(&self, message: &str, id_from: &Uuid, id_to: &Uuid) {
         if let Some(socket_recipient) = self.sessions.get(id_to) {
-            let _ = socket_recipient.do_send(WsMessage(message.to_owned()));
+            let msg = message.to_owned();
+            let packet = ProtocolMessage::ClientBound(ServeMsg(SerializableUuid(*id_from), msg));
+            let _ = socket_recipient.do_send(WsMessage(packet));
 
             println!("Sending message {message} to {id_to}");
         } else {
@@ -50,7 +55,7 @@ impl Handler<Connect> for Chat {
         println!("Inserting session");
         self.sessions.insert(msg.id, msg.addr);
 
-        self.send_message(&format!("your id is {}", msg.id), &msg.id);
+        //self.send_message(&format!("your id is {}", msg.id), &msg.id);
     }
 }
 
@@ -60,6 +65,6 @@ impl Handler<ClientActorMessage> for Chat {
     fn handle(&mut self, msg: ClientActorMessage, _ctx: &mut Context<Self>) -> Self::Result {
         self.sessions
             .iter()
-            .for_each(|client| self.send_message(&msg.msg, client.0));
+            .for_each(|client| self.send_message(&msg.msg, &msg.id, client.0));
     }
 }
