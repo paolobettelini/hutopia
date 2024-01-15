@@ -2,3 +2,4 @@ target
 dist
 pkg
 plugins
+node_modules

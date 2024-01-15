@@ -7,23 +7,24 @@ server_crate="chat-plugin-server"
 client_crate="chat-plugin-client"
 # =============
 
+trap 'echo "Error: Command failed"; exit 1' ERR
+
 # build the pkg using wasm-pack
 cd $client_crate
 CARGO_TARGET_DIR="/home/paolo/Desktop/rust_target" wasm-pack build --target web
 
-# remove useless files
-cd ./pkg
-rm *.ts
-rm *.json
-rm .gitignore
-cd ..
+cd website
+npm install # --dry-run --quiet || npm install # run install only if necessary
+npm run build
 
-# mv pkg
-if [ -d "../pkg" ]; then
-    rm -rf ../pkg
+# mv dist
+
+if [ -d "../../dist" ]; then
+    rm -rf ../../dist
 fi
-mv ./pkg ../
+mv ./dist ../../
 
+cd ..
 cd ..
 cd $server_crate
 

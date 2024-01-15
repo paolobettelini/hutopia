@@ -28,19 +28,9 @@ pub fn App() -> impl IntoView {
 }
 
 fn ServerSpace() -> impl IntoView {
-    let script = "
-        import init, { run } from 'http://localhost:8080/widget_file/chat/chat_plugin_client.js';
-        async function main() {
-            await init();
-            run();
-        }
-        main();
-    ";
-
     view! {
-        <script type="module">
-            {script}
-        </script>
+        <p> Home page </p>
+        <script src="http://localhost:8080/widget_file/chat/index.bundle.js"></script>
         <widget-chat></widget-chat>
         <widget-chat></widget-chat>
     }

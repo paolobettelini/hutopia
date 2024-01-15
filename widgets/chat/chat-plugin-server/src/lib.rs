@@ -28,11 +28,11 @@ extern "C" fn register(registrar: &mut dyn IPluginRegistrar) {
 }
 
 #[derive(RustEmbed)]
-#[folder = "../pkg/"]
-pub(crate) struct PkgAsset;
+#[folder = "../dist/"]
+pub(crate) struct DistAsset;
 
 pub(crate) fn handle_static_file(path: &str) -> Vec<u8> {
-    match PkgAsset::get(path) {
+    match DistAsset::get(path) {
         Some(content) => content.data.into_owned(),
         None => vec![], // TODO return Option
     }
