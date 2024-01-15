@@ -28,11 +28,27 @@ pub fn App() -> impl IntoView {
 }
 
 fn ServerSpace() -> impl IntoView {
+    let script = "
+    function loadIframe() {
+        let inputUrl = document.getElementById('urlInput').value;
+        let iframe = document.createElement('iframe');
+        iframe.src = inputUrl + '/space_file/index.html';
+        iframe.width = '100%';
+        iframe.height = '400px';
+        iframe.style.border = '1px solid #ccc';
+        let iframeContainer = document.getElementById('iframeContainer');
+        iframeContainer.innerHTML = ''; // Clear previous iframe
+        iframeContainer.appendChild(iframe);
+    }
+    ";
+
     view! {
         <p> Home page </p>
-        <script src="http://localhost:8080/widget_file/chat/index.bundle.js"></script>
-        <widget-chat></widget-chat>
-        <widget-chat></widget-chat>
+        <input type="text" id="urlInput" placeholder="Enter URL"/>
+        <button onclick="loadIframe()">Load Server</button>
+
+        <div id="iframeContainer"></div>
+        <script> {script} </script>
     }
 }
 

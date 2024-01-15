@@ -3,6 +3,9 @@ use hutopia_plugin_server::*;
 use hutopia_utils::config::*;
 use mime_guess::from_path;
 use std::alloc::System;
+use std::fs::File;
+use std::io::{self, Read};
+use std::path::Path;
 
 mod config;
 mod init;
@@ -44,6 +47,7 @@ async fn main() -> std::io::Result<()> {
                     .add(("Access-Control-Allow-Headers", "Content-Type")),
             )
             .service(serve_widget_file)
+            .service(serve_space_file)
             .app_data(data.clone());
 
         // Init plugins
@@ -103,6 +107,22 @@ async fn serve_widget_file(
         .get(&widget_name)
         .unwrap()
         .get_file(&file_name);
+
+    HttpResponse::Ok()
+        .content_type(from_path(&file_name).first_or_octet_stream().as_ref())
+        .body(content)
+}
+
+#[get("/space_file/{file_name:.+}")]
+async fn serve_space_file(
+    data: web::Data<ServerData>,
+    params: web::Path<String>,
+) -> impl Responder {
+    let file_name = params.to_string();
+    let full_path = Path::new("space").join(&file_name);
+    let mut file = File::open(&full_path).unwrap();
+    let mut content = String::new();
+    file.read_to_string(&mut content).unwrap();
 
     HttpResponse::Ok()
         .content_type(from_path(&file_name).first_or_octet_stream().as_ref())
