@@ -16,6 +16,7 @@ use protocol::message::*;
 // https://rustwasm.github.io/wasm-bindgen/examples/websockets.html
 
 const CUSTOM_HTML_TAG: &str = "widget-chat";
+const CHAT_WS_ADDRESS_PROP: &str = "CHAT_WS_ADDRESS";
 
 // The DOM component
 struct ChatComponent {
@@ -135,7 +136,6 @@ impl CustomElement for ChatComponent {
 // wasm_bindgen entry point defines the custom element
 #[wasm_bindgen]
 pub fn run() -> Result<(), JsValue> {
-    console_log!("Running run");
     // define the Custom Element
     ChatComponent::define(CUSTOM_HTML_TAG);
 
@@ -143,7 +143,20 @@ pub fn run() -> Result<(), JsValue> {
 }
 
 fn init_socket() -> WebSocket {
-    let ws = WebSocket::new("ws://localhost:8080/widget_ws/chat").unwrap();
+    // Read the websocket address
+    let window = window().unwrap();
+    let address = js_sys::Reflect::get(
+        &JsValue::from(web_sys::window().unwrap()),
+        &JsValue::from(CHAT_WS_ADDRESS_PROP),
+    )
+    .unwrap()
+    .as_string()
+    .unwrap();
+
+    let ws_address = format!("ws://{}/widget_ws/chat", address);
+    console_log!("The address is {ws_address}");
+
+    let ws = WebSocket::new(&ws_address).unwrap();
     ws.set_binary_type(web_sys::BinaryType::Arraybuffer);
 
     let _cloned_ws = ws.clone();
