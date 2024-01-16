@@ -19,6 +19,7 @@ features = [
   "Window",
   "Document",
   "HtmlElement",
+  "Element",
   "Node",
   "Text",
   "BinaryType",
