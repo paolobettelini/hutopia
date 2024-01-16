@@ -2,19 +2,19 @@ use custom_elements::{inject_style, CustomElement};
 use hutopia_plugin_client::*;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
-use wasm_bindgen::prelude::*;
+
 use wasm_bindgen::JsCast;
 use web_sys::js_sys;
-use web_sys::{window, Event, HtmlElement, Node, Text};
+use web_sys::{window, Event, HtmlElement, Node};
 use web_sys::{ErrorEvent, MessageEvent, WebSocket};
 use chat_plugin_protocol as protocol;
 use protocol::*;
 use uuid::Uuid;
 use chat_plugin_protocol::protocol::{Parcel, Settings};
 use protocol::message::*;
-use chat_plugin_protocol::message::ProtocolMessage::ClientBound;
 
-const CUSTOM_HTML_TAG: &'static str = "widget-chat";
+
+const CUSTOM_HTML_TAG: &str = "widget-chat";
 
 // The boring part: a basic DOM component
 struct ChatComponent {
@@ -107,7 +107,7 @@ impl Default for ChatComponent {
 // Here's the interesting part: configuring the Custom Element
 impl CustomElement for ChatComponent {
     fn inject_children(&mut self, this: &HtmlElement) {
-        inject_style(&this, "p { color: green; }");
+        inject_style(this, "p { color: green; }");
         let node = self.view();
         this.append_child(&node).unwrap_throw();
     }
@@ -119,9 +119,9 @@ impl CustomElement for ChatComponent {
     fn attribute_changed_callback(
         &mut self,
         _this: &HtmlElement,
-        name: String,
+        _name: String,
         _old_value: Option<String>,
-        new_value: Option<String>,
+        _new_value: Option<String>,
     ) {
         log("attribute changed");
     }
@@ -152,7 +152,7 @@ fn init_socket() -> WebSocket {
     let ws = WebSocket::new("ws://localhost:8080/widget_ws/chat").unwrap();
     // TODO: you should switch to blob type for big transfers like files
     ws.set_binary_type(web_sys::BinaryType::Arraybuffer);
-    let cloned_ws = ws.clone();
+    let _cloned_ws = ws.clone();
     /*let onmessage_callback = Closure::<dyn FnMut(_)>::new(move |e: MessageEvent| {
         // Handle difference Text/Binary,...
         if let Ok(abuf) = e.data().dyn_into::<js_sys::ArrayBuffer>() {
@@ -207,7 +207,7 @@ fn init_socket() -> WebSocket {
         let uuid = Uuid::new_v4();
         console_log!("Generating UUID: {uuid}");
 
-        let ser = SerializableUuid(uuid.clone());
+        let ser = SerializableUuid(uuid);
         let packet = ProtocolMessage::ServerBound(ServerBoundPacket::Connect(ser));
         let bytes = packet.raw_bytes(&Settings::default()).unwrap();
         let _ = cloned_ws.send_with_u8_array(&bytes);

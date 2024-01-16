@@ -19,21 +19,7 @@ impl Actor for WsConn {
     type Context = ws::WebsocketContext<Self>;
 
     fn started(&mut self, ctx: &mut Self::Context) {
-        //let addr = ctx.address();
-        //self.chat
-        //    .send(Connect {
-        //        addr: addr.recipient(),
-        //        id: self.id,
-        //    })
-        //    .into_actor(self)
-        //    .then(|res, _, ctx| {
-        //        match res {
-        //            Ok(_res) => (),
-        //            _ => ctx.stop(),
-        //        }
-        //        fut::ready(())
-        //    })
-        //    .wait(ctx);
+
     }
 
     fn stopping(&mut self, _: &mut Self::Context) -> Running {

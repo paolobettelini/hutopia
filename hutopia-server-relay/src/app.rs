@@ -29,7 +29,7 @@ pub fn App() -> impl IntoView {
 
 fn ServerSpace() -> impl IntoView {
     let script = "
-    function loadIframe() {
+    function loadServer() {
         let inputUrl = document.getElementById('urlInput').value;
         let iframe = document.createElement('iframe');
         iframe.src = inputUrl + '/space_file/index.html';
@@ -45,7 +45,7 @@ fn ServerSpace() -> impl IntoView {
     view! {
         <p> Home page </p>
         <input type="text" id="urlInput" placeholder="Enter URL"/>
-        <button onclick="loadIframe()">Load Server</button>
+        <button onclick="loadServer()">Load Server</button>
 
         <div id="iframeContainer"></div>
         <script> {script} </script>
