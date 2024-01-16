@@ -27,10 +27,16 @@ cargo r -r
 ```
 
 # Plugins
+A plugin is a custom component that a server may use.
 The plugins are loaded at the server start using FFI.
+Plugins usually export custom HTML tags to be used within the space HTML space.
 
 The client code is compiled with `wasm-pack`, generating the `pkg/` folder.
-When the server-side code compiles, it embeds `pkg/` so it can serve the files.
+Then, `npm` is used to compile it to a bundle, alongisde the script `index.js`,
+which is the entry point for the client.
+To load the plugin it is necessary to load this script.
+
+When the server-side code compiles, it embeds `dist/` so it can serve the files.
 
 ## Config
 Plugins may require a config file (possibly a `.toml`) to be placed aside its file.
