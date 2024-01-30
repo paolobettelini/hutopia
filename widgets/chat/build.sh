@@ -11,7 +11,7 @@ trap 'echo "Error: Command failed"; exit 1' ERR
 
 # build the pkg using wasm-pack
 cd $client_crate
-CARGO_TARGET_DIR="/home/paolo/Desktop/rust_target" wasm-pack build --target web
+wasm-pack build --target web
 
 cd website
 npm install # --dry-run --quiet || npm install # run install only if necessary
