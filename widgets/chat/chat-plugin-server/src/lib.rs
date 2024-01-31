@@ -10,6 +10,7 @@ use actix_web::web::ServiceConfig;
 mod actors_messages;
 mod chat;
 mod websocket;
+mod config;
 pub(crate) use actors_messages::*;
 use chat::*;
 use websocket::*;
@@ -49,11 +50,15 @@ impl IPlugin for ChatPlugin {
     }
 
     fn init(&self, cfg: &mut ServiceConfig) {
+        let config = config::get_config();
+
         // Init sessions handler actor
         let addr = Chat::start_in_arbiter(&self.arbiter.handle(), |_| {
             // init db
-            // TODO read env
-            let url = String::from("XXX");
+            let url = match std::env::var(config.plugin.db_connection_env) {
+                Ok(v) => v,
+                Err(e) => panic!("DB env variable not found")
+            };
             let db = Database::new(url);
             Chat::new(db, Default::default())
         });

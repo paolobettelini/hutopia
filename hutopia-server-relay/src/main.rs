@@ -1,6 +1,7 @@
 use actix_web::middleware::DefaultHeaders;
 use hutopia_database_relay::db::*;
 
+// TODO conf
 const DB_CONNECTION_URL: &str = "postgresql://worker:pass@ip:5432/hutopia";
 
 pub(crate) struct ServerData {

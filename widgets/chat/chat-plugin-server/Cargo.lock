@@ -448,6 +448,7 @@ dependencies = [
  "chat-plugin-database",
  "chat-plugin-protocol",
  "hutopia-plugin-server",
+ "hutopia-utils",
  "log",
  "rust-embed",
  "serde",

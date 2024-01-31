@@ -1,2 +1,2 @@
 [plugin]
-server-address = "..."
+db-connection-env = "DB_CONNECTION_URL"
