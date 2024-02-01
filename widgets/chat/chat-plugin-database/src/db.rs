@@ -23,7 +23,9 @@ impl Database {
             .build(ConnectionManager::new(url))
             .unwrap();
 
-        Self { pool }
+        let db = Self { pool };
+        db.run_embedded_migrations();
+        db
     }
 
     fn get_connection(&self) -> PooledConnection<ConnectionManager<diesel::PgConnection>> {
@@ -36,15 +38,15 @@ impl Database {
         self.get_connection().run_pending_migrations(MIGRATIONS).unwrap();
     }
 
-    pub fn create_user(&self, user_id: &Uuid, message_text: String) -> bool {
+    pub fn insert_message(&self, user_id: &Uuid, message_text: String) -> bool {
         let new_msg = NewMessage { user_id, message_text };
 
         messages::add_message(&mut self.get_connection(), new_msg)
     }
 
-/*
-    pub fn get_user(&self, username: &str) -> Option<User> {
-        users::get_user(&mut self.get_connection(), username)
-    }*/
+
+    pub fn get_messages(&self) -> Vec<Message> {
+        messages::get_messages(&mut self.get_connection())
+    }
 
 }

@@ -90,8 +90,13 @@ impl WsConn {
                         fut::ready(())
                     })
                     .wait(ctx);
-            }
-            _ => println!("Packet not implemented"),
+            },
+            ServerBoundPacket::Disconnect => {},
+            ServerBoundPacket::QueryMsg => {
+                if let Some(id) = self.id {
+                    self.chat.do_send(ServeMessages { id })
+                }
+            },
         }
     }
 }

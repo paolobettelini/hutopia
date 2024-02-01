@@ -3,7 +3,7 @@ use diesel::prelude::*;
 use uuid::Uuid;
 use crate::schema::message;
 
-#[derive(Queryable, Debug)]
+#[derive(Queryable, Selectable, Debug)]
 #[diesel(table_name = message)]
 pub struct Message {
     pub user_id: Uuid,

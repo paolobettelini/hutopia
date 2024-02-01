@@ -59,12 +59,27 @@ impl Handler<Connect> for Chat {
     }
 }
 
+impl Handler<ServeMessages> for Chat {
+    type Result = ();
+
+    fn handle(&mut self, pckt: ServeMessages, _: &mut Context<Self>) -> Self::Result {
+        let id = pckt.id;
+
+        let messages = self.database.get_messages();
+        for msg in messages {
+            self.send_message(&msg.message_text, &msg.user_id, &id);
+        }
+    }
+}
+
 impl Handler<ClientActorMessage> for Chat {
     type Result = ();
 
-    fn handle(&mut self, msg: ClientActorMessage, _ctx: &mut Context<Self>) -> Self::Result {
+    fn handle(&mut self, msg: ClientActorMessage, _ctx: &mut Context<Self>) -> Self::Result {        
         self.sessions
             .iter()
             .for_each(|client| self.send_message(&msg.msg, &msg.id, client.0));
+
+        self.database.insert_message(&msg.id, msg.msg);
     }
 }

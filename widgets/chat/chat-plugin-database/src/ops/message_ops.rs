@@ -11,11 +11,11 @@ pub fn add_message(connection: &mut PgConnection, new_message: NewMessage) -> bo
         .is_ok()
 }
 
-/*pub fn get_messages(connection: &mut PgConnection, uuid: &Uuid) -> Option<User> {
-    use crate::schema::user::{id, dsl::user};
+pub fn get_messages(connection: &mut PgConnection) -> Vec<Message> {
+    use crate::schema::message::dsl::*;
 
-    user
-        .filter(id.eq(uuid))
-        .first::<User>(connection)
-        .ok()
-}*/
+    message
+        .select(Message::as_select())
+        .load::<Message>(connection)
+        .unwrap()
+}

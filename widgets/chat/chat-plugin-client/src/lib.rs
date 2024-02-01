@@ -81,12 +81,17 @@ impl ChatComponent {
                     res.unwrap()
                 };
 
-                if let ProtocolMessage::ClientBound(ClientBoundPacket::ServeMsg(id, msg)) = message {
-                    let msg = format!("{:?}: {msg}", id.0);
-                    let txt_node = document.create_text_node(&msg);
-    
-                    msg_container.append_child(&txt_node).unwrap();
-                    msg_container.append_child(&document.create_element("br").unwrap());
+                if let ProtocolMessage::ClientBound(message) = message {
+                    match message {
+                        ClientBoundPacket::ServeMsg(id, msg) => {
+                            let msg = format!("{:?}: {msg}", id.0);
+                            let txt_node = document.create_text_node(&msg);
+            
+                            msg_container.append_child(&txt_node).unwrap();
+                            msg_container.append_child(&document.create_element("br").unwrap());
+                        },
+                        _ => {},
+                    }
                 }
             }
         });
@@ -176,6 +181,11 @@ fn init_socket() -> WebSocket {
 
         let ser = SerializableUuid(uuid);
         let packet = ProtocolMessage::ServerBound(ServerBoundPacket::Connect(ser));
+        let bytes = packet.raw_bytes(&Settings::default()).unwrap();
+        let _ = cloned_ws.send_with_u8_array(&bytes);
+
+        // Send QueryMsg packet
+        let packet = ProtocolMessage::ServerBound(ServerBoundPacket::QueryMsg);
         let bytes = packet.raw_bytes(&Settings::default()).unwrap();
         let _ = cloned_ws.send_with_u8_array(&bytes);
     });
