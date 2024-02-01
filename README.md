@@ -7,8 +7,8 @@ When the space server starts up, it loads the plugins from the `plugins` folder.
 Prerequisites:
 ```bash
 cargo install cargo-leptos
-sudo pacman -S wasm-pack
-sudo pacman -S diesel-cli
+rustup target add wasm32-unknown-unknown
+sudo pacman -S wasm-pack diesel-cli jq
 ```
 Central server:
 ```bash
@@ -54,7 +54,7 @@ Force the nightly version for the entire project.
 
 Idea for plugin authentication:
 Relay has pub/priv keys. When user connects to space,
-it asks relay to sign a token contaning "spaceId + userId + expirationDate",
-so tht the space can check it.
+it asks relay to sign a token contaning "spaceId + userId + expirationDateUnix",
+so tht the space can check the signature.
 Plugin are authenticated through the space server begin authenticated.
 The expiration date is 1 minute.
