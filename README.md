@@ -40,15 +40,21 @@ When the server-side code compiles, it embeds `dist/` so it can serve the files.
 
 ## Config
 Plugins may require a config file (possibly a `.toml`) to be placed aside its file.
-If the plugin needs to connect to a database, it will possibly read a `DATABASE_ADDRESS`
-variable, but it can be overwritten in the configuration file.
+If the plugin needs to connect to a database, it will read an enviromental variable.
 
 # Websocket
 Client-side widgets can open a socket on the space server, sending messages indicating the reference widget. The server forwards these messages to the server-side widget using FFI.
 
-# Todo
+# Todo and notes
 Force the nightly version for the entire project.
 
-The widget need to authenticate the user, access his usersname, profile picture and such.
-The widget needs to know the server IP and port to access websocket and such.
-The widget needs to access some global functions, like send notifications or play audio, and such.
+- The widget need to authenticate the user, access his usersname, profile picture and such.
+- The widget needs to access some global functions, like send notifications or play audio, open the profile of somebody and such.
+- Maybe: A plugin may export a set of required dependency plugins (then we need priority loading).
+
+Idea for plugin authentication:
+Relay has pub/priv keys. When user connects to space,
+it asks relay to sign a token contaning "spaceId + userId + expirationDate",
+so tht the space can check it.
+Plugin are authenticated through the space server begin authenticated.
+The expiration date is 1 minute.
