@@ -35,10 +35,10 @@ pub fn init_files() {
     }
 
     // Create config file if it doesn't exist
-    if !file_exists("hutopia.toml") {
-        log::info!("Created config file: {}", "hutopia.toml");
-        let mut file = fs::File::create("hutopia.toml").unwrap(); // TODO
-        file.write_all(include_bytes!("../hutopia.toml")).unwrap(); // TODO
+    if !file_exists("space.toml") {
+        log::info!("Created config file: {}", "space.toml");
+        let mut file = fs::File::create("space.toml").unwrap(); // TODO
+        file.write_all(include_bytes!("../space.toml")).unwrap(); // TODO
     }
 }
 

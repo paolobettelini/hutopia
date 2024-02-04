@@ -19,7 +19,12 @@ leptos_router = { version = "0.6.4", features = ["nightly"] }
 wasm-bindgen = "=0.2.89"
 
 hutopia-database-relay = { path = "../hutopia-database-relay" }
+hutopia-utils = { path = "../hutopia-utils" }
 reqwest = { version = "0.11", features = ["blocking"] }
+serde = "1.0.196"
+log = "0.4.20"
+env_logger = "0.11.1"
+#actix-session = "0.9.0"
 # Don't know why this doesn't compile
 # Anyway you can use it like this
 # let cors = Cors::default().send_wildcard();
@@ -27,7 +32,7 @@ reqwest = { version = "0.11", features = ["blocking"] }
 # actix-cors = "0.6.5"
 
 [features]
-csr = ["leptos/csr", "leptos_meta/csr", "leptos_router/csr"]
+default = ["ssr", "hydrate"]
 hydrate = ["leptos/hydrate", "leptos_meta/hydrate", "leptos_router/hydrate"]
 ssr = [
   "dep:actix-files",

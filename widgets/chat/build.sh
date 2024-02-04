@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # =============
-cargo_command="cargo b -j 1" # --release
+cargo_command="cargo b -j 1 -r" # --release
 plugin_folder="../../hutopia-server-space/plugins"
 server_crate="chat-plugin-server"
 client_crate="chat-plugin-client"

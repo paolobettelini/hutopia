@@ -1,30 +1,41 @@
 use actix_web::middleware::DefaultHeaders;
 use hutopia_database_relay::db::*;
 
+use actix_files::Files;
+use actix_web::*;
+use hutopia_server_relay::app::*;
+use leptos::*;
+use leptos_actix::{generate_route_list, LeptosRoutes};
+use hutopia_utils::config::parse_toml_config;
+
+mod init;
+mod config;
+use init::*;
+use config::*;
+
 // TODO conf
 const DB_CONNECTION_URL: &str = "postgresql://worker:pass@ip:5432/hutopia";
+pub const LOG_ENV: &str = "RUST_LOG";
 
 pub(crate) struct ServerData {
     db: Database,
 }
 
-#[cfg(feature = "ssr")]
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    use actix_files::Files;
-    use actix_web::*;
-    use hutopia_server_relay::app::*;
-    use leptos::*;
-    use leptos_actix::{generate_route_list, LeptosRoutes};
+    init_logger();
+    init_files();
 
-    let conf = get_configuration(None).await.unwrap();
-    let addr = conf.leptos_options.site_addr;
+    let config: Box<RelayConfig> = parse_toml_config("relay.toml").unwrap();
+    let bind_address = (config.server.address, config.server.port);
+
+    let leptos_conf = get_configuration(None).await.unwrap();
+   
     // Generate the list of routes in your Leptos App
     let routes = generate_route_list(App);
-    println!("listening on http://{}", &addr);
 
     HttpServer::new(move || {
-        let leptos_options = &conf.leptos_options;
+        let leptos_options = &leptos_conf.leptos_options;
         let site_root = &leptos_options.site_root;
 
         App::new()
@@ -49,7 +60,7 @@ async fn main() -> std::io::Result<()> {
         //.app_data(web::Data::new(get_server_data()))
         //.wrap(middleware::Compress::default())
     })
-    .bind(&addr)?
+    .bind(&bind_address)?
     .run()
     .await
 }
@@ -60,7 +71,6 @@ fn get_server_data() -> ServerData {
     ServerData { db }
 }
 
-#[cfg(feature = "ssr")]
 #[actix_web::get("favicon.ico")]
 async fn favicon(
     leptos_options: actix_web::web::Data<leptos::LeptosOptions>,
@@ -70,26 +80,4 @@ async fn favicon(
     Ok(actix_files::NamedFile::open(format!(
         "{site_root}/favicon.ico"
     ))?)
-}
-
-#[cfg(not(any(feature = "ssr", feature = "csr")))]
-pub fn main() {
-    // no client-side main function
-    // unless we want this to work with e.g., Trunk for pure client-side testing
-    // see lib.rs for hydration function instead
-    // see optional feature `csr` instead
-}
-
-#[cfg(all(not(feature = "ssr"), feature = "csr"))]
-pub fn main() {
-    // a client-side main function is required for using `trunk serve`
-    // prefer using `cargo leptos serve` instead
-    // to run: `trunk serve --open --features csr`
-    use hutopia_server_relay::app::*;
-    use leptos::*;
-    use wasm_bindgen::prelude::wasm_bindgen;
-
-    console_error_panic_hook::set_once();
-
-    leptos::mount_to_body(App);
 }

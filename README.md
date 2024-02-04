@@ -58,3 +58,5 @@ it asks relay to sign a token contaning "spaceId + userId + expirationDateUnix",
 so tht the space can check the signature.
 Plugin are authenticated through the space server begin authenticated.
 The expiration date is 1 minute.
+
+https://github.com/leptos-rs/leptos/tree/main/examples/sso_auth_axum

@@ -28,8 +28,7 @@ async fn main() -> std::io::Result<()> {
     init_logger();
     init_files();
 
-    let config: Box<SpaceConfig> = parse_toml_config("hutopia.toml").unwrap();
-
+    let config: Box<SpaceConfig> = parse_toml_config("space.toml").unwrap();
     let bind_address = (config.server.address, config.server.port);
 
     HttpServer::new(move || {
