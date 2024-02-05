@@ -13,7 +13,8 @@ sudo pacman -S wasm-pack diesel-cli jq
 Central server:
 ```bash
 cd hutopia-server-relay
-cargo leptos build --release
+wasm-pack build --target=web --release --no-default-features --features=hydrate
+cargo run --release --no-default-features --features=ssr
 ```
 Widgets:
 ```bash

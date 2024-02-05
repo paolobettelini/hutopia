@@ -29,7 +29,7 @@ async fn main() -> std::io::Result<()> {
     let config: Box<RelayConfig> = parse_toml_config("relay.toml").unwrap();
     let bind_address = (config.server.address, config.server.port);
 
-    let leptos_conf = get_configuration(None).await.unwrap();
+    let leptos_conf = get_configuration(Some("Cargo.toml")).await.unwrap();
    
     // Generate the list of routes in your Leptos App
     let routes = generate_route_list(App);
