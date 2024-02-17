@@ -9,4 +9,6 @@ pub struct RelayConfig {
 pub struct Server {
     pub address: String,
     pub port: u16,
+    #[serde(rename(deserialize = "db-connection-env"))]
+    pub db_connection_env: String,
 }

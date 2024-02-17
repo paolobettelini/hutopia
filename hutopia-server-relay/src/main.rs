@@ -3,9 +3,6 @@ use hutopia_database_relay::db::*;
 
 use actix_files::Files;
 use actix_web::*;
-use hutopia_server_relay::app::*;
-use leptos::*;
-use leptos_actix::{generate_route_list, LeptosRoutes};
 use hutopia_utils::config::parse_toml_config;
 
 mod init;
@@ -13,8 +10,6 @@ mod config;
 use init::*;
 use config::*;
 
-// TODO conf
-const DB_CONNECTION_URL: &str = "postgresql://worker:pass@ip:5432/hutopia";
 pub const LOG_ENV: &str = "RUST_LOG";
 
 pub(crate) struct ServerData {
@@ -29,15 +24,15 @@ async fn main() -> std::io::Result<()> {
     let config: Box<RelayConfig> = parse_toml_config("relay.toml").unwrap();
     let bind_address = (config.server.address, config.server.port);
 
-    let leptos_conf = get_configuration(Some("Cargo.toml")).await.unwrap();
-   
-    // Generate the list of routes in your Leptos App
-    let routes = generate_route_list(App);
+    // init db
+    let db_env = config.server.db_connection_env.clone();
+    let url = match std::env::var(db_env) {
+        Ok(v) => v,
+        Err(e) => panic!("DB env variable not found")
+    };
+    let db = Database::new(url);
 
     HttpServer::new(move || {
-        let leptos_options = &leptos_conf.leptos_options;
-        let site_root = &leptos_options.site_root;
-
         App::new()
             .wrap(
                 DefaultHeaders::new()
@@ -49,35 +44,34 @@ async fn main() -> std::io::Result<()> {
                     ))
                     .add(("Access-Control-Allow-Headers", "Content-Type")),
             )
-            // serve JS/WASM/CSS from `pkg`
-            .service(Files::new("/pkg", format!("{site_root}/pkg")))
-            // serve other assets from the `assets` directory
-            .service(Files::new("/assets", site_root))
-            // serve the favicon from /favicon.ico
-            .service(favicon)
-            .leptos_routes(leptos_options.to_owned(), routes.to_owned(), App)
-            .app_data(web::Data::new(leptos_options.to_owned()))
-        //.app_data(web::Data::new(get_server_data()))
-        //.wrap(middleware::Compress::default())
+            .service(static_files)
+            .app_data(web::Data::new(db.clone()))
     })
     .bind(&bind_address)?
     .run()
     .await
 }
 
-fn get_server_data() -> ServerData {
-    let db = Database::new(DB_CONNECTION_URL.to_string());
+// Rust embed - TODO move to another file
 
-    ServerData { db }
+use rust_embed::RustEmbed;
+use mime_guess::from_path;
+
+#[derive(RustEmbed)]
+#[folder = "$CARGO_MANIFEST_DIR/../hutopia-frontend/dist"]
+pub(crate) struct Asset;
+
+#[get("/{_:.*}")]
+async fn static_files(path: web::Path<String>) -> impl Responder {
+    handle_static_file(path.as_str())
 }
 
-#[actix_web::get("favicon.ico")]
-async fn favicon(
-    leptos_options: actix_web::web::Data<leptos::LeptosOptions>,
-) -> actix_web::Result<actix_files::NamedFile> {
-    let leptos_options = leptos_options.into_inner();
-    let site_root = &leptos_options.site_root;
-    Ok(actix_files::NamedFile::open(format!(
-        "{site_root}/favicon.ico"
-    ))?)
+pub(crate) fn handle_static_file(path: &str) -> HttpResponse {
+    // If in release mode, read from the embedded folder
+    match Asset::get(path) {
+        Some(content) => HttpResponse::Ok()
+            .content_type(from_path(path).first_or_octet_stream().as_ref())
+            .body(content.data.into_owned()),
+        None => HttpResponse::NotFound().body("404 Not Found"),
+    }
 }

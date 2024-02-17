@@ -10,6 +10,7 @@ use diesel_migrations::*;
 
 type DbPool = Pool<ConnectionManager<PgConnection>>;
 
+#[derive(Clone, Debug)]
 pub struct Database {
     pool: DbPool,
 }

@@ -13,8 +13,7 @@ sudo pacman -S wasm-pack diesel-cli jq
 Central server:
 ```bash
 cd hutopia-server-relay
-wasm-pack build --target=web --release --no-default-features --features=hydrate
-cargo run --release --no-default-features --features=ssr
+cargo r -r
 ```
 Widgets:
 ```bash
@@ -25,6 +24,14 @@ Server space:
 ```bash
 cd hutopia-server-space
 cargo r -r
+```
+
+# Development
+```bash
+# Start relay
+cd hutopia-frontend
+bun run dev
+# The proxy redirects :3000 to :3001
 ```
 
 # Plugins
