@@ -1,8 +1,8 @@
 use crate::*;
 use actix_web::*;
 use reqwest::{Client, Url};
-use std::error::Error;
 use serde::{Deserialize, Serialize};
+use std::error::Error;
 
 #[derive(Deserialize)]
 pub struct OAuthResponse {
@@ -20,8 +20,8 @@ pub struct QueryCode {
 
 #[derive(Deserialize, Debug)]
 pub struct GoogleUserResult {
-    pub id: Option<String>,
-    pub email: Option<String>,
+    pub id: String,
+    pub email: String,
     pub verified_email: Option<bool>,
     pub name: Option<String>,
     pub given_name: Option<String>,
@@ -30,9 +30,19 @@ pub struct GoogleUserResult {
     pub locale: Option<String>,
 }
 
+/// Users who have signed in for the first time,
+/// but have yet to register an account
+/// on the register page.
+#[derive(Debug)]
+pub struct UnregisteredUser {
+    pub google_user: GoogleUserResult,
+    pub access_token: String,
+    pub id_token: String,
+}
+
 pub fn gen_login_url(client_id: &str, redirect: &str) -> String {
     const CHOOSE_ACCOUNT: &str = "https://accounts.google.com/o/oauth2/v2/auth/oauthchooseaccount";
-    
+
     let mut url = Url::parse(CHOOSE_ACCOUNT).unwrap();
 
     url.query_pairs_mut()
@@ -48,7 +58,7 @@ pub fn gen_login_url(client_id: &str, redirect: &str) -> String {
 
 pub async fn request_token(
     authorization_code: &str,
-    data: web::Data<ServerData>,
+    data: &web::Data<ServerData>,
 ) -> Result<OAuthResponse, Box<dyn Error>> {
     let redirect_url = &data.auth.redirect_url;
     let client_id = &data.auth.client_id;

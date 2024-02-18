@@ -2,15 +2,18 @@ CREATE TABLE users (
   --id         SERIAL PRIMARY KEY,
   id         TEXT PRIMARY KEY,
   email      TEXT NOT NULL UNIQUE,
+  username   TEXT NOT NULL UNIQUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
---CREATE TABLE user_permissions (
---  id       SERIAL PRIMARY KEY,
---  user_id  INTEGER NOT NULL,
---  token    TEXT NOT NULL,
---  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
---);
+-- Session tokens
+-- TODO: these are here forever
+CREATE TABLE user_tokens (
+  user_id  TEXT NOT NULL,
+  token    TEXT NOT NULL,
+  PRIMARY KEY (user_id, token),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE  
+);
 
 CREATE TABLE google_tokens (
   id SERIAL PRIMARY KEY,

@@ -2,17 +2,19 @@ use actix_web::middleware::DefaultHeaders;
 use hutopia_database_relay::db::*;
 
 use actix_files::Files;
-use actix_session::{Session, SessionMiddleware, storage::CookieSessionStore, config::CookieContentSecurity};
-use actix_web::*;
+use actix_session::{
+    config::CookieContentSecurity, storage::CookieSessionStore, Session, SessionMiddleware,
+};
 use actix_web::cookie::{Key, SameSite};
+use actix_web::*;
 
 use hutopia_utils::config::parse_toml_config;
 
+mod auth;
 mod config;
 mod init;
 mod routes;
 mod state;
-mod auth;
 use config::*;
 use init::*;
 use routes::*;
@@ -51,9 +53,10 @@ async fn main() -> std::io::Result<()> {
                 SessionMiddleware::builder(CookieSessionStore::default(), Key::generate())
                     .cookie_content_security(CookieContentSecurity::Private)
                     .cookie_same_site(SameSite::Lax)
-                    .build()
+                    .build(),
             )
             .service(login)
+            .service(register)
             .service(login_fallback)
             .service(static_files)
             .app_data(web::Data::new(server_data.clone()))
