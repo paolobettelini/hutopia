@@ -41,12 +41,14 @@ defineExpose({ loadServer });
           </div>
 
           <div v-if="user.logged">
-            <p>Welcome {{ user.username }}</p>
+            <p>Welcome {{ user.username }}, your mail is {{ user.email }}</p>
 
             <input type="text" id="urlInput" placeholder="Enter URL"/>
             <button @click="loadServer">Load Server</button>
 
             <div id="iframeContainer"></div>
+
+            <a href="/api/logout">Logout</a>
           </div>
       </div>
       <div v-else>

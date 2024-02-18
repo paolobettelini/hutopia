@@ -51,8 +51,12 @@ impl Database {
         users::user_username_exists(&mut self.get_connection(), username)
     }
 
-    pub fn get_user(&self, id: &str) -> Option<User> {
-        users::get_user(&mut self.get_connection(), id)
+    pub fn get_user_by_id(&self, id: &str) -> Option<User> {
+        users::get_user_by_id(&mut self.get_connection(), id)
+    }
+
+    pub fn get_user_by_username(&self, username: &str) -> Option<User> {
+        users::get_user_by_username(&mut self.get_connection(), username)
     }
 
     pub fn add_user_token(&self, user_id: &str, token: &str) -> bool {

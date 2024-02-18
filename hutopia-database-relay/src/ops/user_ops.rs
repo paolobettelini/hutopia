@@ -10,11 +10,20 @@ pub fn create_user(connection: &mut PgConnection, new_user: NewUser) -> bool {
         .is_ok()
 }
 
-pub fn get_user(connection: &mut PgConnection, user_id: &str) -> Option<User> {
+pub fn get_user_by_id(connection: &mut PgConnection, user_id: &str) -> Option<User> {
     use crate::schema::users::dsl::*;
 
     users
         .filter(id.eq(user_id))
+        .first::<User>(connection)
+        .ok()
+}
+
+pub fn get_user_by_username(connection: &mut PgConnection, username: &str) -> Option<User> {
+    use crate::schema::users::dsl::*;
+
+    users
+        .filter(username.eq(username))
         .first::<User>(connection)
         .ok()
 }

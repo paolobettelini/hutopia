@@ -62,7 +62,7 @@ async fn login_fallback(
     if data.db.user_id_exists(&google_user.id) {
         // user has an account
 
-        let username = data.db.get_user(&google_user.id).unwrap().username;
+        let username = data.db.get_user_by_id(&google_user.id).unwrap().username;
         let username_cookie = Cookie::build("username", &username).path("/").finish();
 
         return HttpResponse::Found()
@@ -153,7 +153,7 @@ async fn register(
 struct UserData {
     pub logged: bool,
     pub username: Option<String>,
-    pub mail: Option<String>,
+    pub email: Option<String>,
 }
 
 #[post("/api/userData")]
@@ -164,7 +164,9 @@ async fn user_data(req: HttpRequest, data: web::Data<ServerData>) -> impl Respon
             ..Default::default()
         };
         let json = serde_json::to_string(&data).expect("Failed to serialize");
-
+        
+        log::warn!("User was not authenticated!");
+        
         HttpResponse::Ok()
             .content_type("application/json")
             .body(json)
@@ -180,10 +182,20 @@ async fn user_data(req: HttpRequest, data: web::Data<ServerData>) -> impl Respon
         None => return not_logged(),
     };
 
+    let user = match data.db.get_user_by_username(&username) {
+        Some(user) => user,
+        None => return not_logged(),
+    };
+
+    // Check session token
+    /*if !data.db.user_has_token(&user.id, &token) {
+        return not_logged();
+    }*/
+
     let user_data = UserData {
         logged: true,
         username: Some(username),
-        mail: None,
+        email: Some(user.email),
     };
 
     let json = serde_json::to_string(&user_data).expect("Failed to serialize");
@@ -192,3 +204,23 @@ async fn user_data(req: HttpRequest, data: web::Data<ServerData>) -> impl Respon
         .content_type("application/json")
         .body(json)
 }
+
+/*
+#[post("/api/logout")]
+async fn logout(req: HttpRequest) -> HttpResponse {
+    let cookie1 = Cookie::build("username", "")
+        .path("/")
+        .expires(std::time::OffsetDateTime::now_utc() - std::time::Duration::days(1)) // Set the expiration time in the past
+        .finish();
+
+    let cookie2 = Cookie::build("token", "")
+        .path("/")
+        .expires(std::time::OffsetDateTime::now_utc() - std::time::Duration::days(1)) // Set the expiration time in the past
+        .finish();
+
+    HttpResponse::Found()
+        .header("Location", "/")
+        .cookie(cookie1)
+        .cookie(cookie2)
+        .finish()
+}*/

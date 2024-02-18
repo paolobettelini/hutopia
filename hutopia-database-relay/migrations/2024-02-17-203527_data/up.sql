@@ -15,6 +15,7 @@ CREATE TABLE user_tokens (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE  
 );
 
+-- TODO: popoulate
 CREATE TABLE google_tokens (
   id SERIAL PRIMARY KEY,
   user_id TEXT NOT NULL UNIQUE,

@@ -59,6 +59,7 @@ async fn main() -> std::io::Result<()> {
             .service(register)
             .service(login_fallback)
             .service(user_data)
+            //.service(logout)
             .service(static_files)
             .app_data(web::Data::new(server_data.clone()))
     })
