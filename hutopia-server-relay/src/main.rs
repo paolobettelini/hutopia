@@ -58,6 +58,7 @@ async fn main() -> std::io::Result<()> {
             .service(login)
             .service(register)
             .service(login_fallback)
+            .service(user_data)
             .service(static_files)
             .app_data(web::Data::new(server_data.clone()))
     })
@@ -65,8 +66,6 @@ async fn main() -> std::io::Result<()> {
     .run()
     .await
 }
-
-// Rust embed - TODO move to another file
 
 use mime_guess::from_path;
 use rust_embed::RustEmbed;
@@ -81,7 +80,12 @@ async fn static_files(path: web::Path<String>) -> impl Responder {
 }
 
 pub(crate) fn handle_static_file(path: &str) -> HttpResponse {
-    // If in release mode, read from the embedded folder
+    let mut path = path;
+    if path == "" {
+        path = "index.html";
+    }
+
+    // read from the embedded folder
     match Asset::get(path) {
         Some(content) => HttpResponse::Ok()
             .content_type(from_path(path).first_or_octet_stream().as_ref())

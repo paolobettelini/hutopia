@@ -4,6 +4,7 @@ use crate::*;
 use actix_web::cookie::Cookie;
 use actix_web::*;
 use reqwest::{Client, Url};
+use serde::Serialize;
 use std::error::Error;
 
 /// Redirects the user to the google login page
@@ -56,13 +57,17 @@ async fn login_fallback(
     // Generate a random session token
     let token = random_session_token();
     // Give token as a cookies
-    let cookie = Cookie::build("token", &token).path("/").finish();
+    let token_cookie = Cookie::build("token", &token).path("/").finish();
 
     if data.db.user_id_exists(&google_user.id) {
         // user has an account
 
+        let username = data.db.get_user(&google_user.id).unwrap().username;
+        let username_cookie = Cookie::build("username", &username).path("/").finish();
+
         return HttpResponse::Found()
-            .cookie(cookie)
+            .cookie(token_cookie)
+            .cookie(username_cookie)
             .header("Location", "/")
             .finish();
     } else {
@@ -80,7 +85,7 @@ async fn login_fallback(
         data.add_unregistered_user(token.clone(), unregistered_user);
 
         return HttpResponse::Found()
-            .cookie(cookie)
+            .cookie(token_cookie)
             .header("Location", "/register")
             .finish();
     }
@@ -122,9 +127,8 @@ async fn register(
 
     // check if username already exists
     if data.db.username_exists(&username) {
-        return HttpResponse::BadGateway().json(
-            serde_json::json!({"status": "fail", "message": "Username already exists"}),
-        );
+        return HttpResponse::BadGateway()
+            .json(serde_json::json!({"status": "fail", "message": "Username already exists"}));
     }
 
     // create user
@@ -136,6 +140,55 @@ async fn register(
     // add token to db
     data.db.add_user_token(&user.google_user.id, &token);
 
+    let username_cookie = Cookie::build("username", &username).path("/").finish();
+
     // Back to homepage
-    HttpResponse::Found().header("Location", "/").finish()
+    HttpResponse::Found()
+        .cookie(username_cookie)
+        .header("Location", "/")
+        .finish()
+}
+
+#[derive(Serialize, Debug, Default)]
+struct UserData {
+    pub logged: bool,
+    pub username: Option<String>,
+    pub mail: Option<String>,
+}
+
+#[post("/api/userData")]
+async fn user_data(req: HttpRequest, data: web::Data<ServerData>) -> impl Responder {
+    fn not_logged() -> HttpResponse {
+        let data = UserData {
+            logged: false,
+            ..Default::default()
+        };
+        let json = serde_json::to_string(&data).expect("Failed to serialize");
+
+        HttpResponse::Ok()
+            .content_type("application/json")
+            .body(json)
+    }
+
+    let token = match req.cookie("token") {
+        Some(token_cookie) => token_cookie.value().to_string(),
+        None => return not_logged(),
+    };
+
+    let username = match req.cookie("username") {
+        Some(username_cookie) => username_cookie.value().to_string(),
+        None => return not_logged(),
+    };
+
+    let user_data = UserData {
+        logged: true,
+        username: Some(username),
+        mail: None,
+    };
+
+    let json = serde_json::to_string(&user_data).expect("Failed to serialize");
+
+    HttpResponse::Ok()
+        .content_type("application/json")
+        .body(json)
 }

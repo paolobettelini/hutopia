@@ -17,17 +17,18 @@ fn main() -> std::io::Result<()> {
 fn build_frontend() -> std::io::Result<()> {
     let node_modules = std::path::Path::new("../hutopia-frontend/node_modules");
     if !node_modules.exists() {
-        let _exit_status = Command::new("bun")
+        let _out = Command::new("bun")
             .current_dir("../hutopia-frontend")
             .arg("install")
-            .status()?;
+            .output()?;
     }
 
-    let _exit_status = Command::new("bun")
+    let _out = Command::new("bun")
         .current_dir("../hutopia-frontend")
         .arg("run")
         .arg("build")
-        .status()?;
+        .output()?;
+
     Ok(())
 }
 
