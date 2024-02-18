@@ -1,12 +1,12 @@
 use diesel::{prelude::*, r2d2::{PooledConnection, Pool, ConnectionManager}};
 use diesel_migrations::*;
 
-/*use crate::{
-    models::{NewUser, User},
+use crate::{
+    models::{NewUser},
     ops::{
         user_ops as users
     }
-};*/
+};
 
 type DbPool = Pool<ConnectionManager<PgConnection>>;
 
@@ -36,13 +36,12 @@ impl Database {
         self.get_connection().run_pending_migrations(MIGRATIONS).unwrap();
     }
 
-    /*
-    use uuid::Uuid;
-    pub fn create_user(&self, uuid: &Uuid) -> bool {
-        let new_user = NewUser { id: uuid };
-
+    pub fn create_user(&self, id: &str, email: &str) -> bool {
+        let new_user = NewUser { id, email };
+        
         users::create_user(&mut self.get_connection(), new_user)
     }
+    /*
 
 
     pub fn get_user(&self, username: &str) -> Option<User> {

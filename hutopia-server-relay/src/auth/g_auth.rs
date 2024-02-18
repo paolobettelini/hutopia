@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 pub struct OAuthResponse {
     pub access_token: String,
     pub id_token: String,
+    // TODO refresh secret and refresh implementation
 }
 
 /// Google login response code
@@ -27,6 +28,22 @@ pub struct GoogleUserResult {
     pub family_name: Option<String>,
     pub picture: Option<String>,
     pub locale: Option<String>,
+}
+
+pub fn gen_login_url(client_id: &str, redirect: &str) -> String {
+    const CHOOSE_ACCOUNT: &str = "https://accounts.google.com/o/oauth2/v2/auth/oauthchooseaccount";
+    
+    let mut url = Url::parse(CHOOSE_ACCOUNT).unwrap();
+
+    url.query_pairs_mut()
+        .append_pair("client_id", client_id)
+        .append_pair("scope", "https://www.googleapis.com/auth/userinfo.email")
+        .append_pair("response_type", "code")
+        .append_pair("redirect_uri", redirect)
+        .append_pair("service", "lso")
+        .append_pair("o2v", "2");
+
+    url.into_string()
 }
 
 pub async fn request_token(

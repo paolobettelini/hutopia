@@ -2,8 +2,10 @@ use actix_web::middleware::DefaultHeaders;
 use hutopia_database_relay::db::*;
 
 use actix_files::Files;
-use actix_session::{Session, SessionMiddleware};
+use actix_session::{Session, SessionMiddleware, storage::CookieSessionStore, config::CookieContentSecurity};
 use actix_web::*;
+use actix_web::cookie::{Key, SameSite};
+
 use hutopia_utils::config::parse_toml_config;
 
 mod config;
@@ -32,15 +34,24 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(move || {
         App::new()
+            // Set CORS headers
+            // this allows the client to make requests to
+            // third-party spaces.
             .wrap(
                 DefaultHeaders::new()
-                    // Set CORS headers
                     .add(("Access-Control-Allow-Origin", "*"))
                     .add((
                         "Access-Control-Allow-Methods",
                         "GET, POST, PUT, DELETE, OPTIONS",
                     ))
                     .add(("Access-Control-Allow-Headers", "Content-Type")),
+            )
+            // This prevents CSRF attacks
+            .wrap(
+                SessionMiddleware::builder(CookieSessionStore::default(), Key::generate())
+                    .cookie_content_security(CookieContentSecurity::Private)
+                    .cookie_same_site(SameSite::Lax)
+                    .build()
             )
             .service(login)
             .service(login_fallback)

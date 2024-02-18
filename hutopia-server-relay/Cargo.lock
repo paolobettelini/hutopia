@@ -1036,6 +1036,7 @@ dependencies = [
  "hutopia-utils",
  "log",
  "mime_guess",
+ "rand",
  "reqwest",
  "rust-embed",
  "serde",
