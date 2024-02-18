@@ -4,9 +4,6 @@ use hutopia_database_relay::db::*;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
-// TODO: a system to empty unregistered_users sometimes
-// by keeping a time limit
-
 #[derive(Debug, Clone)]
 pub(crate) struct ServerData {
     /// Database pool
@@ -61,6 +58,9 @@ impl ServerData {
 
         let mut map = self.unregistered_users.lock().unwrap();
         map.insert(token, user);
+
+        // TODO: a system to empty unregistered_users sometimes
+        // by keeping a time limit
     }
 
     pub fn take_unregistered_user(&self, token: String) -> Option<UnregisteredUser> {

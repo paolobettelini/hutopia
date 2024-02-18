@@ -6,6 +6,7 @@ use actix_web::*;
 use reqwest::{Client, Url};
 use serde::Serialize;
 use std::error::Error;
+use actix_web::cookie::time::OffsetDateTime;
 
 /// Redirects the user to the google login page
 #[get("/api/login")]
@@ -65,6 +66,11 @@ async fn login_fallback(
         let username = data.db.get_user_by_id(&google_user.id).unwrap().username;
         let username_cookie = Cookie::build("username", &username).path("/").finish();
 
+        // add token to db
+        data.db.add_user_token(&google_user.id, &token);
+
+        // TODO replace token if expired
+
         return HttpResponse::Found()
             .cookie(token_cookie)
             .cookie(username_cookie)
@@ -114,6 +120,10 @@ async fn register(
             );
         }
     };
+
+    // TODO: maybe if the user has the "username" token,
+    // return to /
+    // also in the /api/login if the user has either the token or username cookie
 
     // check if user is authenticated
     let user = match data.take_unregistered_user(token.clone()) {
@@ -165,8 +175,6 @@ async fn user_data(req: HttpRequest, data: web::Data<ServerData>) -> impl Respon
         };
         let json = serde_json::to_string(&data).expect("Failed to serialize");
         
-        log::warn!("User was not authenticated!");
-        
         HttpResponse::Ok()
             .content_type("application/json")
             .body(json)
@@ -188,9 +196,9 @@ async fn user_data(req: HttpRequest, data: web::Data<ServerData>) -> impl Respon
     };
 
     // Check session token
-    /*if !data.db.user_has_token(&user.id, &token) {
+    if !data.db.user_has_token(&user.id, &token) {
         return not_logged();
-    }*/
+    }
 
     let user_data = UserData {
         logged: true,
@@ -205,17 +213,16 @@ async fn user_data(req: HttpRequest, data: web::Data<ServerData>) -> impl Respon
         .body(json)
 }
 
-/*
-#[post("/api/logout")]
+#[get("/api/logout")]
 async fn logout(req: HttpRequest) -> HttpResponse {
     let cookie1 = Cookie::build("username", "")
         .path("/")
-        .expires(std::time::OffsetDateTime::now_utc() - std::time::Duration::days(1)) // Set the expiration time in the past
+        .expires(OffsetDateTime::UNIX_EPOCH)
         .finish();
 
     let cookie2 = Cookie::build("token", "")
         .path("/")
-        .expires(std::time::OffsetDateTime::now_utc() - std::time::Duration::days(1)) // Set the expiration time in the past
+        .expires(OffsetDateTime::UNIX_EPOCH)
         .finish();
 
     HttpResponse::Found()
@@ -223,4 +230,4 @@ async fn logout(req: HttpRequest) -> HttpResponse {
         .cookie(cookie1)
         .cookie(cookie2)
         .finish()
-}*/
+}

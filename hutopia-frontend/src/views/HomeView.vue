@@ -48,6 +48,7 @@ defineExpose({ loadServer });
 
             <div id="iframeContainer"></div>
 
+            <br>
             <a href="/api/logout">Logout</a>
           </div>
       </div>
