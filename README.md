@@ -3,6 +3,13 @@ Hutopia is comprised of a central server: `relay`. <br>
 A user can host his own `space` server. <br>
 When the space server starts up, it loads the plugins from the `plugins` folder.
 
+# Environmental variables
+
+* A `postgres` database connection string using a user with permissions to the database tables.
+* A Google `OAuth2` application with permission to access the email
+of users (auth secret, client id).
+* A redirect URI to the relay server `http(s)://SERVER:PORT/api/g_auth`.
+
 # Compile
 Prerequisites:
 ```bash
