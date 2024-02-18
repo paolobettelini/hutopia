@@ -1,17 +1,18 @@
 use actix_web::middleware::DefaultHeaders;
 use hutopia_database_relay::db::*;
 
-use actix_session::{Session, SessionMiddleware};
 use actix_files::Files;
+use actix_session::{Session, SessionMiddleware};
 use actix_web::*;
 use hutopia_utils::config::parse_toml_config;
 
-mod init;
-mod state;
 mod config;
+mod init;
 mod routes;
-use init::*;
+mod state;
+mod auth;
 use config::*;
+use init::*;
 use routes::*;
 use state::*;
 
@@ -53,8 +54,8 @@ async fn main() -> std::io::Result<()> {
 
 // Rust embed - TODO move to another file
 
-use rust_embed::RustEmbed;
 use mime_guess::from_path;
+use rust_embed::RustEmbed;
 
 #[derive(RustEmbed)]
 #[folder = "$CARGO_MANIFEST_DIR/../hutopia-frontend/dist"]

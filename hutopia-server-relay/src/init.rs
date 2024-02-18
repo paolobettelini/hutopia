@@ -11,7 +11,6 @@ pub fn init_logger() {
 }
 
 pub fn init_files() {
-
     // Create config file if it doesn't exist
     if !file_exists("relay.toml") {
         log::info!("Created config file: {}", "relay.toml");

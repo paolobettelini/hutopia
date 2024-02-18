@@ -10,7 +10,7 @@ fn main() -> std::io::Result<()> {
 
     eprintln!("Building frontend");
     build_frontend()?;
-    
+
     Ok(())
 }
 
@@ -22,7 +22,7 @@ fn build_frontend() -> std::io::Result<()> {
             .arg("install")
             .status()?;
     }
-    
+
     let _exit_status = Command::new("bun")
         .current_dir("../hutopia-frontend")
         .arg("run")
