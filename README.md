@@ -6,7 +6,6 @@ When the space server starts up, it loads the plugins from the `plugins` folder.
 # Compile
 Prerequisites:
 ```bash
-cargo install cargo-leptos
 rustup target add wasm32-unknown-unknown
 sudo pacman -S wasm-pack diesel-cli jq
 ```
@@ -65,6 +64,4 @@ Relay has pub/priv keys. When user connects to space,
 it asks relay to sign a token contaning "spaceId + userId + expirationDateUnix",
 so tht the space can check the signature.
 Plugin are authenticated through the space server begin authenticated.
-The expiration date is 1 minute.
-
-https://github.com/leptos-rs/leptos/tree/main/examples/sso_auth_axum
+The expiration date is 1 minute or something.

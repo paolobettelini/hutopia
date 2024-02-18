@@ -1,36 +1,33 @@
 use actix_web::middleware::DefaultHeaders;
 use hutopia_database_relay::db::*;
 
+use actix_session::{Session, SessionMiddleware};
 use actix_files::Files;
 use actix_web::*;
 use hutopia_utils::config::parse_toml_config;
 
 mod init;
+mod state;
 mod config;
+mod routes;
 use init::*;
 use config::*;
+use routes::*;
+use state::*;
 
-pub const LOG_ENV: &str = "RUST_LOG";
-
-pub(crate) struct ServerData {
-    db: Database,
-}
+pub const LOG_ENV: &'static str = "RUST_LOG";
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     init_logger();
     init_files();
 
+    // init config
     let config: Box<RelayConfig> = parse_toml_config("relay.toml").unwrap();
-    let bind_address = (config.server.address, config.server.port);
+    let bind_address = (config.server.address.clone(), config.server.port);
 
-    // init db
-    let db_env = config.server.db_connection_env.clone();
-    let url = match std::env::var(db_env) {
-        Ok(v) => v,
-        Err(e) => panic!("DB env variable not found")
-    };
-    let db = Database::new(url);
+    // Server data
+    let server_data = ServerData::new(&config);
 
     HttpServer::new(move || {
         App::new()
@@ -44,8 +41,10 @@ async fn main() -> std::io::Result<()> {
                     ))
                     .add(("Access-Control-Allow-Headers", "Content-Type")),
             )
+            .service(login)
+            .service(login_fallback)
             .service(static_files)
-            .app_data(web::Data::new(db.clone()))
+            .app_data(web::Data::new(server_data.clone()))
     })
     .bind(&bind_address)?
     .run()

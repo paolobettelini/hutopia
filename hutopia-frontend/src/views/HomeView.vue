@@ -1,5 +1,6 @@
 <script setup>
 import { defineExpose } from 'vue';
+import LoginButton from '../components/LoginButton.vue'
 
 function loadServer() {
   let inputUrl = document.getElementById('urlInput').value;
@@ -17,6 +18,8 @@ defineExpose({ loadServer });
 </script>
 
 <template>
+  <LoginButton/>
+
   <p> Home page </p>
   <input type="text" id="urlInput" placeholder="Enter URL"/>
   <button @click="loadServer">Load Server</button>
