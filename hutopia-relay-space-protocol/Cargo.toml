@@ -1,0 +1,8 @@
+[package]
+name = "hutopia-relay-space-protocol"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+protocol = { version = "3.4.0" }
+protocol-derive = "3.4.0"
