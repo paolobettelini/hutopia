@@ -64,7 +64,7 @@ impl IPlugin for ChatPlugin {
         });
 
         // Plugin Websocket route
-        let path = format!("/widget_ws/{}", PLUGIN_ID);
+        let path = format!("/widget/{}/ws", PLUGIN_ID);
         let route = web::get().to(init_connection);
 
         cfg.route(&path, route)

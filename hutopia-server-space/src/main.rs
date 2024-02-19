@@ -90,7 +90,7 @@ fn get_data() -> ServerData {
     ServerData { plugin_handler }
 }
 
-#[get("/widget_file/{widget_name}/{file_name:.+}")]
+#[get("/widget/{widget_name}/file/{file_name:.+}")]
 async fn serve_widget_file(
     data: web::Data<ServerData>,
     params: web::Path<(String, String)>,
@@ -98,7 +98,7 @@ async fn serve_widget_file(
     let widget_name = params.0.to_string();
     let file_name = params.1.to_string();
 
-    // TODO: maybe directly register /widget_file/chat/{file} at boot
+    // TODO: maybe directly register /widget/chat/file/{file} at boot
 
     let content = data
         .plugin_handler

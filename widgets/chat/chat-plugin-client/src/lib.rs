@@ -158,7 +158,7 @@ fn init_socket() -> WebSocket {
     .as_string()
     .unwrap();
 
-    let ws_address = format!("ws://{}/widget_ws/chat", address);
+    let ws_address = format!("ws://{}/widget/chat/ws", address);
     console_log!("The address is {ws_address}");
 
     let ws = WebSocket::new(&ws_address).unwrap();
