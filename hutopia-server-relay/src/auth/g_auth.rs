@@ -1,7 +1,7 @@
 use crate::*;
-use actix_web::*;
+
 use reqwest::{Client, Url};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::error::Error;
 
 #[derive(Deserialize)]

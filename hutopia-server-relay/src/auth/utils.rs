@@ -1,10 +1,10 @@
 use rand::seq::SliceRandom;
 use rand::thread_rng;
-use actix_web::HttpResponse;
-use hutopia_database_relay::models::User;
+
 use crate::ServerData;
-use actix_web::HttpRequest;
 use actix_web::web;
+use actix_web::HttpRequest;
+use hutopia_database_relay::models::User;
 
 /// Returns (username, token) if the user is authenticated.
 pub fn authenticate(req: &HttpRequest, data: &web::Data<ServerData>) -> Option<User> {

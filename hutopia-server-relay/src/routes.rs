@@ -2,16 +2,14 @@ use crate::auth::g_auth::*;
 use crate::auth::utils::*;
 use crate::*;
 use actix_web::cookie::Cookie;
-use actix_web::*;
-use reqwest::{Client, Url};
+
 use serde::Serialize;
-use std::error::Error;
+
 use actix_web::cookie::time::OffsetDateTime;
-use hutopia_database_relay::models::User;
 
 /// Redirects the user to the google login page
 #[get("/api/login")]
-async fn login(req: HttpRequest, data: web::Data<ServerData>) -> impl Responder {
+async fn login(_req: HttpRequest, data: web::Data<ServerData>) -> impl Responder {
     let client_id = &data.auth.client_id;
     let redirect = &data.auth.redirect_url;
 
@@ -172,7 +170,7 @@ async fn user_data(req: HttpRequest, data: web::Data<ServerData>) -> impl Respon
     // Authenticate
     let user = match authenticate(&req, &data) {
         Some(user) => user,
-        None => return not_logged(), 
+        None => return not_logged(),
     };
 
     let user_data = UserData {
@@ -189,7 +187,7 @@ async fn user_data(req: HttpRequest, data: web::Data<ServerData>) -> impl Respon
 }
 
 #[get("/api/logout")]
-async fn logout(req: HttpRequest) -> HttpResponse {
+async fn logout(_req: HttpRequest) -> HttpResponse {
     let cookie1 = Cookie::build("username", "")
         .path("/")
         .expires(OffsetDateTime::UNIX_EPOCH)
@@ -213,7 +211,7 @@ pub fn not_logged() -> HttpResponse {
         ..Default::default()
     };
     let json = serde_json::to_string(&data).expect("Failed to serialize");
-    
+
     HttpResponse::Ok()
         .content_type("application/json")
         .body(json)

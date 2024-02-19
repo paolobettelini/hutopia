@@ -1,9 +1,7 @@
 use actix_web::middleware::DefaultHeaders;
-use hutopia_database_relay::db::*;
 
-use actix_files::Files;
 use actix_session::{
-    config::CookieContentSecurity, storage::CookieSessionStore, Session, SessionMiddleware,
+    config::CookieContentSecurity, storage::CookieSessionStore, SessionMiddleware,
 };
 use actix_web::cookie::{Key, SameSite};
 use actix_web::*;

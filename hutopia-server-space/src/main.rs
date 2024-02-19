@@ -4,7 +4,7 @@ use hutopia_utils::config::*;
 use mime_guess::from_path;
 use std::alloc::System;
 use std::fs::File;
-use std::io::{self, Read};
+use std::io::Read;
 use std::path::Path;
 
 mod config;
@@ -114,7 +114,7 @@ async fn serve_widget_file(
 
 #[get("/space_file/{file_name:.+}")]
 async fn serve_space_file(
-    data: web::Data<ServerData>,
+    _data: web::Data<ServerData>,
     params: web::Path<String>,
 ) -> impl Responder {
     let file_name = params.to_string();
