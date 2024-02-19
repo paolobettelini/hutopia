@@ -28,8 +28,12 @@ async fn main() -> std::io::Result<()> {
     init_logger();
     init_files();
 
+    // init config
     let config: Box<SpaceConfig> = parse_toml_config("space.toml").unwrap();
     let bind_address = (config.server.address, config.server.port);
+
+    // Server data
+    //let server_data = ServerData::new(&config);
 
     HttpServer::new(move || {
         let data = web::Data::new(get_data()); // Internally an Arc

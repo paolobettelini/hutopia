@@ -23,8 +23,9 @@ impl Database {
             .max_size(15)
             .build(ConnectionManager::new(url))
             .unwrap();
-
-        Self { pool }
+        let db = Self { pool };
+        db.run_embedded_migrations();
+        db
     }
 
     fn get_connection(&self) -> PooledConnection<ConnectionManager<diesel::PgConnection>> {
