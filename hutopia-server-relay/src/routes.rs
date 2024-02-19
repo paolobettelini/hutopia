@@ -1,5 +1,5 @@
 use crate::auth::g_auth::*;
-use crate::auth::utils::random_session_token;
+use crate::auth::utils::*;
 use crate::*;
 use actix_web::cookie::Cookie;
 use actix_web::*;
@@ -7,6 +7,7 @@ use reqwest::{Client, Url};
 use serde::Serialize;
 use std::error::Error;
 use actix_web::cookie::time::OffsetDateTime;
+use hutopia_database_relay::models::User;
 
 /// Redirects the user to the google login page
 #[get("/api/login")]
@@ -168,41 +169,15 @@ struct UserData {
 
 #[post("/api/userData")]
 async fn user_data(req: HttpRequest, data: web::Data<ServerData>) -> impl Responder {
-    fn not_logged() -> HttpResponse {
-        let data = UserData {
-            logged: false,
-            ..Default::default()
-        };
-        let json = serde_json::to_string(&data).expect("Failed to serialize");
-        
-        HttpResponse::Ok()
-            .content_type("application/json")
-            .body(json)
-    }
-
-    let token = match req.cookie("token") {
-        Some(token_cookie) => token_cookie.value().to_string(),
-        None => return not_logged(),
-    };
-
-    let username = match req.cookie("username") {
-        Some(username_cookie) => username_cookie.value().to_string(),
-        None => return not_logged(),
-    };
-
-    let user = match data.db.get_user_by_username(&username) {
+    // Authenticate
+    let user = match authenticate(&req, &data) {
         Some(user) => user,
-        None => return not_logged(),
+        None => return not_logged(), 
     };
-
-    // Check session token
-    if !data.db.user_has_token(&user.id, &token) {
-        return not_logged();
-    }
 
     let user_data = UserData {
         logged: true,
-        username: Some(username),
+        username: Some(user.username),
         email: Some(user.email),
     };
 
@@ -230,4 +205,16 @@ async fn logout(req: HttpRequest) -> HttpResponse {
         .cookie(cookie1)
         .cookie(cookie2)
         .finish()
+}
+
+pub fn not_logged() -> HttpResponse {
+    let data = UserData {
+        logged: false,
+        ..Default::default()
+    };
+    let json = serde_json::to_string(&data).expect("Failed to serialize");
+    
+    HttpResponse::Ok()
+        .content_type("application/json")
+        .body(json)
 }
