@@ -1,7 +1,7 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
-    google_tokens (id) {
+    relay_google_tokens (id) {
         id -> Int4,
         user_id -> Text,
         access_secret -> Text,
@@ -10,14 +10,14 @@ diesel::table! {
 }
 
 diesel::table! {
-    user_tokens (user_id, token) {
+    relay_user_tokens (user_id, token) {
         user_id -> Text,
         token -> Text,
     }
 }
 
 diesel::table! {
-    users (id) {
+    relay_users (id) {
         id -> Text,
         email -> Text,
         username -> Text,
@@ -25,11 +25,11 @@ diesel::table! {
     }
 }
 
-diesel::joinable!(google_tokens -> users (user_id));
-diesel::joinable!(user_tokens -> users (user_id));
+diesel::joinable!(relay_google_tokens -> relay_users (user_id));
+diesel::joinable!(relay_user_tokens -> relay_users (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
-    google_tokens,
-    user_tokens,
-    users,
+    relay_google_tokens,
+    relay_user_tokens,
+    relay_users,
 );

@@ -1,10 +1,9 @@
 use diesel::prelude::*;
-use crate::schema::users;
-use crate::schema::user_tokens;
+use crate::schema::{relay_users, relay_user_tokens};
 use chrono::NaiveDateTime;
 
 #[derive(Insertable)]
-#[diesel(table_name = users)]
+#[diesel(table_name = relay_users)]
 pub struct NewUser<'a> {
     pub id: &'a str,
     pub email: &'a str,
@@ -12,7 +11,7 @@ pub struct NewUser<'a> {
 }
 
 #[derive(Queryable, Debug)]
-#[diesel(table_name = users)]
+#[diesel(table_name = relay_users)]
 pub struct User {
     pub id: String,
     pub email: String,
@@ -21,14 +20,14 @@ pub struct User {
 }
 
 #[derive(Insertable)]
-#[diesel(table_name = user_tokens)]
+#[diesel(table_name = relay_user_tokens)]
 pub struct NewUserToken<'a> {
     pub user_id: &'a str,
     pub token: &'a str,
 }
 
 #[derive(Queryable, Debug)]
-#[diesel(table_name = user_tokens)]
+#[diesel(table_name = relay_user_tokens)]
 pub struct UserToken {
     pub user_id: String,
     pub token: String,

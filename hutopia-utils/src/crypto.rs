@@ -4,6 +4,7 @@ use std::error::Error;
 use std::fs::File;
 use std::io::Read;
 
+#[cfg(not(target_arch = "wasm32"))]
 pub fn generate_key_pair() -> Ed25519KeyPair {
     let rng = SystemRandom::new();
     let pkcs8_bytes = Ed25519KeyPair::generate_pkcs8(&rng).unwrap();

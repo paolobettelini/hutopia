@@ -46,7 +46,7 @@ The plugins are loaded at the server start using FFI.
 Plugins usually export custom HTML tags to be used within the space HTML space.
 
 The client code is compiled with `wasm-pack`, generating the `pkg/` folder.
-Then, `npm` is used to compile it to a bundle, alongisde the script `index.js`,
+Then, `npm` is used to compile it to a bundle, alongside the script `index.js`,
 which is the entry point for the client.
 To load the plugin it is necessary to load this script.
 
