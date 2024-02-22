@@ -33,7 +33,7 @@ pub fn authenticate(req: &HttpRequest, data: &web::Data<ServerData>) -> Option<U
     Some(user)
 }
 
-pub fn random_session_token() -> String {
+pub fn random_token() -> String {
     let length = 64;
     let alphabet: Vec<char> = "abcdefghijklmnopqrstuvwxyz".chars().collect();
     let mut rng = thread_rng();

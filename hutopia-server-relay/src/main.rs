@@ -58,6 +58,8 @@ async fn main() -> std::io::Result<()> {
             .service(login_fallback)
             .service(user_data)
             .service(logout)
+            .service(gen_space_auth_token)
+            .service(check_space_auth_token)
             .service(static_files)
             .app_data(web::Data::new(server_data.clone()))
     })

@@ -2,7 +2,7 @@ use crate::auth::g_auth::*;
 use crate::auth::utils::*;
 use crate::*;
 use actix_web::cookie::Cookie;
-
+use serde_json::json;
 use serde::Serialize;
 
 use actix_web::cookie::time::OffsetDateTime;
@@ -29,7 +29,7 @@ async fn login_fallback(
 
     if code.is_empty() {
         return HttpResponse::Unauthorized().json(
-            serde_json::json!({"status": "fail", "message": "Authorization code not provided!"}),
+            json!({"status": "fail", "message": "Authorization code not provided!"}),
         );
     }
 
@@ -37,7 +37,7 @@ async fn login_fallback(
     if token_response.is_err() {
         let message = token_response.err().unwrap().to_string();
         return HttpResponse::BadGateway()
-            .json(serde_json::json!({"status": "fail", "message": message}));
+            .json(json!({"status": "fail", "message": message}));
     }
 
     let token_response = token_response.unwrap();
@@ -49,13 +49,13 @@ async fn login_fallback(
     if google_user.is_err() {
         let message = google_user.err().unwrap().to_string();
         return HttpResponse::BadGateway()
-            .json(serde_json::json!({"status": "fail", "message": message}));
+            .json(json!({"status": "fail", "message": message}));
     }
 
     let google_user = google_user.unwrap();
 
     // Generate a random session token
-    let token = random_session_token();
+    let token = random_token();
     // Give token as a cookies
     let token_cookie = Cookie::build("token", &token).path("/").finish();
 
@@ -115,7 +115,7 @@ async fn register(
         Some(token_cookie) => token_cookie.value().to_string(),
         None => {
             return HttpResponse::BadGateway().json(
-                serde_json::json!({"status": "fail", "message": "You are not authenticated"}),
+                json!({"status": "fail", "message": "You are not authenticated"}),
             );
         }
     };
@@ -129,7 +129,7 @@ async fn register(
         Some(user) => user,
         None => {
             return HttpResponse::BadGateway().json(
-                serde_json::json!({"status": "fail", "message": "You are not authenticated"}),
+                json!({"status": "fail", "message": "You are not authenticated"}),
             );
         }
     };
@@ -137,7 +137,7 @@ async fn register(
     // check if username already exists
     if data.db.username_exists(&username) {
         return HttpResponse::BadGateway()
-            .json(serde_json::json!({"status": "fail", "message": "Username already exists"}));
+            .json(json!({"status": "fail", "message": "Username already exists"}));
     }
 
     // create user
@@ -203,6 +203,36 @@ async fn logout(_req: HttpRequest) -> HttpResponse {
         .cookie(cookie1)
         .cookie(cookie2)
         .finish()
+}
+
+/// Generate a random token for the user to be sent to a space
+#[post("/api/genSpaceAuthToken")]
+async fn gen_space_auth_token(req: HttpRequest, data: web::Data<ServerData>) -> impl Responder {
+    // Authenticate
+    let user = match authenticate(&req, &data) {
+        Some(user) => user,
+        None => return not_logged(),
+    };
+
+    let token = random_token();
+    data.add_space_auth_token(user.username.clone(), token);
+
+    HttpResponse::Ok().finish()
+}
+
+/// Sent by a space server to authenticate a user.
+#[post("/api/checkSpaceAuthToken/{username}/{token}")]
+async fn check_space_auth_token(
+    path: web::Path<(String, String)>,
+    data: web::Data<ServerData>,
+) -> impl Responder {
+    let authenticated = data.take_space_auth_tokens(&path.0, &path.1);
+
+    let json = json!({
+        "authenticated": true
+    });
+
+    HttpResponse::Ok().json(json)
 }
 
 pub fn not_logged() -> HttpResponse {

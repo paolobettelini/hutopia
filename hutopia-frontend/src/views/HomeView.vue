@@ -4,6 +4,8 @@ import LoginButton from '../components/LoginButton.vue';
 import postData from "@/utils/post.js";
 
 function loadServer(): void {
+
+  //
   const inputUrl = (document.getElementById('urlInput') as HTMLInputElement).value;
   const iframe = document.createElement('iframe');
   iframe.src = inputUrl + '/space_file/index.html';

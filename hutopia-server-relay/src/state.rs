@@ -8,10 +8,18 @@ use std::sync::{Arc, Mutex};
 pub(crate) struct ServerData {
     /// Database pool
     pub db: Database,
-    /// <Session token, Unregistered User>
-    pub unregistered_users: Arc<Mutex<HashMap<String, UnregisteredUser>>>,
     /// Auth config
     pub auth: GoogleAuthConfig,
+    /// Users who are about to create their accounts in the /register page
+    /// <Session token, Unregistered User>
+    pub unregistered_users: Arc<Mutex<HashMap<String, UnregisteredUser>>>,
+    /// Tokens used by the space to authenticate a user to its server.
+    /// The space will ask this server for the token to see if it matches
+    /// the one provided by the user.
+    /// <username, [Token]>
+    /// Although rare, users may connect to multiple servers at a time, so
+    /// a list is used, but an hash table is probably not worth.
+    pub space_auth_tokens: Arc<Mutex<HashMap<String, Vec<String>>>>,
 }
 
 #[derive(Debug, Clone)]
@@ -43,13 +51,15 @@ impl ServerData {
             client_id,
         };
 
-        // Unregistered users
+        // Caches
         let unregistered_users = Arc::new(Mutex::new(HashMap::new()));
+        let space_auth_tokens = Arc::new(Mutex::new(HashMap::new()));
 
         Self {
             db,
-            unregistered_users,
             auth,
+            unregistered_users,
+            space_auth_tokens,
         }
     }
 
@@ -59,12 +69,45 @@ impl ServerData {
         let mut map = self.unregistered_users.lock().unwrap();
         map.insert(token, user);
 
-        // TODO: a system to empty unregistered_users sometimes
-        // by keeping a time limit
+        // TODO: use a timed cache
     }
 
     pub fn take_unregistered_user(&self, token: String) -> Option<UnregisteredUser> {
         let mut map = self.unregistered_users.lock().unwrap();
         map.remove(&token)
+    }
+
+    pub fn add_space_auth_token(&self, username: String, token: String) {
+        log::debug!("Adding unregistered space auth token to RAM {token}");
+
+        let mut map = self.space_auth_tokens.lock().unwrap();
+
+        if let Some(vec) = map.get_mut(&username) {
+            // If the username exists, append the token to the vector
+            vec.push(token);
+        } else {
+            let mut new_vec = Vec::new();
+            new_vec.push(token);
+            map.insert(username, new_vec);
+        }
+
+        // TODO: use a timed cache
+    }
+
+    pub fn take_space_auth_tokens(&self, username: &str, token: &str) -> bool {
+        let mut map = self.space_auth_tokens.lock().unwrap();
+
+        if let Some(vec) = map.get_mut(username) {
+            if let Some(index) = vec.iter().position(|s| s == token) {
+                vec.remove(index);
+                // If the vector is empty after removal, remove the entry from the hashmap
+                if vec.is_empty() {
+                    map.remove(username);
+                }
+                return true;
+            }
+        }
+
+        false
     }
 }
