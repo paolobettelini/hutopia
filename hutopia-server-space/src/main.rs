@@ -14,18 +14,16 @@ use actix_session::{
 mod config;
 mod init;
 mod lib_ext;
+mod state;
 use config::*;
 use init::*;
 use lib_ext::*;
+use state::*;
 
 pub const LOG_ENV: &str = "RUST_LOG";
 
 #[global_allocator]
 static ALLOCATOR: System = System;
-
-pub struct ServerData {
-    pub plugin_handler: PluginHandler,
-}
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -34,13 +32,13 @@ async fn main() -> std::io::Result<()> {
 
     // init config
     let config: Box<SpaceConfig> = parse_toml_config("space.toml").unwrap();
-    let bind_address = (config.server.address, config.server.port);
-
-    // Server data
-    //let server_data = ServerData::new(&config);
+    let bind_address = (config.server.address.clone(), config.server.port);
 
     HttpServer::new(move || {
-        let data = web::Data::new(get_data()); // Internally an Arc
+        // Server data (internally an Arc)
+        // Note, this cannot be created outside since PluginHandler
+        // is not thread-safe.
+        let server_data = web::Data::new(ServerData::new(&config));
 
         let mut app = App::new()
             // Set CORS headers
@@ -64,10 +62,10 @@ async fn main() -> std::io::Result<()> {
             )
             .service(serve_widget_file)
             .service(serve_space_file)
-            .app_data(data.clone());
+            .app_data(server_data.clone());
 
         // Init plugins
-        for plugin in data.plugin_handler.plugins.values() {
+        for plugin in server_data.plugin_handler.plugins.values() {
             app = app.configure(|cfg| plugin.init(cfg));
         }
 
@@ -85,26 +83,6 @@ async fn main() -> std::io::Result<()> {
     .await?;
 
     Ok(())
-}
-
-fn get_data() -> ServerData {
-    let mut plugin_handler = PluginHandler::new();
-
-    if let Ok(entries) = std::fs::read_dir(PLUGINS_FOLDER) {
-        for entry in entries.flatten() {
-            if let Ok(file_path) = entry.path().into_os_string().into_string() {
-                if file_path.ends_with(LIB_EXTENSION) {
-                    unsafe {
-                        plugin_handler
-                            .load(file_path)
-                            .expect("Plugin loading failed");
-                    }
-                }
-            }
-        }
-    }
-
-    ServerData { plugin_handler }
 }
 
 #[get("/widget/{widget_name}/file/{file_name:.+}")]
