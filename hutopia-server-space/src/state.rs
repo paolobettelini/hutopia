@@ -1,7 +1,7 @@
-use crate::{PluginHandler, SpaceConfig, PLUGINS_FOLDER, LIB_EXTENSION};
+use crate::{PluginHandler, SpaceConfig, LIB_EXTENSION, PLUGINS_FOLDER};
 use hutopia_database_space::db::*;
-use serde_json::Value;
 use reqwest::Client;
+use serde_json::Value;
 
 pub(crate) struct ServerData {
     /// Database pool
@@ -21,11 +21,17 @@ impl ServerData {
         let relay_uri = config.server.relay.to_string();
         let plugin_handler = ServerData::get_plugin_handler();
 
-        Self { /*db,*/ relay_uri, plugin_handler }
+        Self {
+            /*db,*/ relay_uri,
+            plugin_handler,
+        }
     }
 
     pub async fn auth_user(&self, username: &str, token: &str) -> bool {
-        let url = format!("{}/api/checkSpaceAuthToken/{}/{}", self.relay_uri, username, token);
+        let url = format!(
+            "{}/api/checkSpaceAuthToken/{}/{}",
+            self.relay_uri, username, token
+        );
 
         let client = Client::new();
         let response = if let Ok(v) = client.post(&url).send().await {
@@ -33,13 +39,13 @@ impl ServerData {
         } else {
             return false;
         };
-        
+
         let json: Value = if let Ok(v) = response.json().await {
             v
         } else {
             return false;
         };
-        
+
         if let Some(authenticated) = json.get("authenticated").and_then(|v| v.as_bool()) {
             authenticated
         } else {
@@ -49,7 +55,7 @@ impl ServerData {
 
     fn get_plugin_handler() -> PluginHandler {
         let mut plugin_handler = PluginHandler::new();
-    
+
         if let Ok(entries) = std::fs::read_dir(PLUGINS_FOLDER) {
             for entry in entries.flatten() {
                 if let Ok(file_path) = entry.path().into_os_string().into_string() {
@@ -63,7 +69,7 @@ impl ServerData {
                 }
             }
         }
-    
+
         plugin_handler
     }
 }

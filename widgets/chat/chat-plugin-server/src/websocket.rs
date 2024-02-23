@@ -1,7 +1,8 @@
 use actix::{Actor, ActorFutureExt, Addr, Handler, Running, StreamHandler};
 use actix_web::{web, web::Data, Error, HttpRequest, HttpResponse};
 use actix_web_actors::ws;
-
+use reqwest::Client;
+use serde_json::Value;
 use crate::*;
 use actix::AsyncContext;
 use actix::{fut, ActorContext, ContextFutureSpawner, WrapFuture};
@@ -122,8 +123,15 @@ pub async fn init_connection(
         chat: chat.get_ref().clone(),
     };
 
-    println!("username {:#?}", req.cookie("username"));
-    println!("token {:#?}", req.cookie("token"));
+    // Auth
+    //let username = req.cookie("username").unwrap().value().to_string();
+    //let token = req.cookie("token").unwrap().value().to_string();
+    //let url = format!("127.0.0.1:8080/internal/auth/{username}/{token}");
+    //let client = reqwest::blocking::Client::new();
+    //let response = client.post(&url).send().unwrap();
+    //let json: serde_json::Value = response.json().unwrap();
+    //let authenticated: bool = json.get("authenticated").and_then(|v| v.as_bool()).unwrap();
+    //println!("chat plugin - authenticated: {}", authenticated);
 
     let resp = ws::start(handler, &req, stream);
     resp
