@@ -6,8 +6,9 @@ edition = "2021"
 [dependencies]
 actix = "0.13.1"
 actix-rt = "2.9.0"
-actix-web = "4.4.1"
+actix-web = { version = "4.4.1" }
 actix-web-actors = "4.2.0"
+actix-session = { version = "0.9.0", features = ["cookie-session"] }
 anyhow = "1.0.79"
 env_logger = "0.10.1"
 hutopia-plugin-server = { path = "../hutopia-plugin-server" }

@@ -3,15 +3,21 @@ import { onMounted, ref } from 'vue'
 import LoginButton from '../components/LoginButton.vue';
 import postData from "@/utils/post.js";
 
+// TODO: put this stuff in a Component
 function loadServer(): void {
+  console.log("Authenticating user for space");
 
-  //
+  postData(`/genSpaceAuthToken`)
+    .then(response => response.json())
+    .then(json => {
+      loadIframe(json);
+    });
+}
+
+function loadIframe(json: any): void {
   const inputUrl = (document.getElementById('urlInput') as HTMLInputElement).value;
   const iframe = document.createElement('iframe');
-  iframe.src = inputUrl + '/space_file/index.html';
-  iframe.width = '100%';
-  iframe.height = '400px';
-  iframe.style.border = '1px solid #ccc';
+
   const iframeContainer = document.getElementById('iframeContainer');
   if (iframeContainer) {
     iframeContainer.innerHTML = ''; // Clear previous iframe
@@ -19,6 +25,17 @@ function loadServer(): void {
   } else {
     console.error('iframeContainer not found.');
   }
+
+  // Set username and token cookies for space authentication
+  let token = json.token;
+  let username = json.username;
+  iframe.contentWindow.document.cookie = `username=${username}; path=/`;
+  iframe.contentWindow.document.cookie = `token=${token}; path=/`;
+
+  iframe.src = inputUrl + '/space_file/index.html';
+  iframe.width = '100%';
+  iframe.height = '400px';
+  iframe.style.border = '1px solid #ccc';
 }
 
 const user = ref(null);

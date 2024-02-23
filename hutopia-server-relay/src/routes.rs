@@ -215,9 +215,14 @@ async fn gen_space_auth_token(req: HttpRequest, data: web::Data<ServerData>) -> 
     };
 
     let token = random_token();
-    data.add_space_auth_token(user.username.clone(), token);
+    data.add_space_auth_token(user.username.clone(), token.clone());
 
-    HttpResponse::Ok().finish()
+    let json = json!({
+        "token": token,
+        "username": user.username, // just for good measure
+    });
+
+    HttpResponse::Ok().json(json)
 }
 
 /// Sent by a space server to authenticate a user.
@@ -229,7 +234,7 @@ async fn check_space_auth_token(
     let authenticated = data.take_space_auth_tokens(&path.0, &path.1);
 
     let json = json!({
-        "authenticated": true
+        "authenticated": authenticated
     });
 
     HttpResponse::Ok().json(json)

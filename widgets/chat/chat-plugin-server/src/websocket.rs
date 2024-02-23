@@ -122,6 +122,9 @@ pub async fn init_connection(
         chat: chat.get_ref().clone(),
     };
 
+    println!("username {:#?}", req.cookie("username"));
+    println!("token {:#?}", req.cookie("token"));
+
     let resp = ws::start(handler, &req, stream);
     resp
 }

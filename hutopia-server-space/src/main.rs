@@ -1,4 +1,5 @@
-use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{get, web, App, HttpResponse, HttpServer, Responder, middleware::DefaultHeaders};
+use actix_web::cookie::{Key, SameSite};
 use hutopia_plugin_server::*;
 use hutopia_utils::config::*;
 use mime_guess::from_path;
@@ -6,6 +7,9 @@ use std::alloc::System;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
+use actix_session::{
+    config::CookieContentSecurity, storage::CookieSessionStore, SessionMiddleware,
+};
 
 mod config;
 mod init;
@@ -23,7 +27,7 @@ pub struct ServerData {
     pub plugin_handler: PluginHandler,
 }
 
-#[actix_rt::main]
+#[actix_web::main]
 async fn main() -> std::io::Result<()> {
     init_logger();
     init_files();
@@ -39,15 +43,24 @@ async fn main() -> std::io::Result<()> {
         let data = web::Data::new(get_data()); // Internally an Arc
 
         let mut app = App::new()
+            // Set CORS headers
+            // this allows the client to make requests to
+            // third-party spaces.
             .wrap(
-                // Set CORS headers
-                actix_web::middleware::DefaultHeaders::new()
+                DefaultHeaders::new()
                     .add(("Access-Control-Allow-Origin", "*"))
                     .add((
                         "Access-Control-Allow-Methods",
                         "GET, POST, PUT, DELETE, OPTIONS",
                     ))
                     .add(("Access-Control-Allow-Headers", "Content-Type")),
+            )
+            // This prevents CSRF attacks
+            .wrap(
+                SessionMiddleware::builder(CookieSessionStore::default(), Key::generate())
+                .cookie_content_security(CookieContentSecurity::Private)
+                .cookie_same_site(SameSite::Lax)
+                .build(),
             )
             .service(serve_widget_file)
             .service(serve_space_file)
