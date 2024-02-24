@@ -15,7 +15,7 @@ use protocol::message::*;
 
 // https://rustwasm.github.io/wasm-bindgen/examples/websockets.html
 
-const CUSTOM_HTML_TAG: &str = "widget-chat";
+const CUSTOM_HTML_TAG: &str = "chat-widget";
 const CHAT_WS_ADDRESS_PROP: &str = "CHAT_WS_ADDRESS";
 
 // The DOM component
