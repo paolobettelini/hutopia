@@ -13,6 +13,8 @@ pub trait IPlugin {
     fn init(&self, cfg: &mut ServiceConfig);
 
     fn get_file(&self, file_name: &str) -> Vec<u8>;
+
+    fn get_plugin_dependencies(&self) -> Vec<String>;
 }
 
 pub trait IPluginRegistrar {

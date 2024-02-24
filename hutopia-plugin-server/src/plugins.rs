@@ -94,4 +94,8 @@ impl IPlugin for PluginProxy {
     fn init(&self, cfg: &mut ServiceConfig) {
         self.plugin.init(cfg)
     }
+
+    fn get_plugin_dependencies(&self) -> Vec<String> {
+        self.plugin.get_plugin_dependencies()
+    }
 }

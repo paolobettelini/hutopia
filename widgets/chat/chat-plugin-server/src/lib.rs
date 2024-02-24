@@ -61,4 +61,8 @@ impl IPlugin for ChatPlugin {
         cfg.route(&path, route)
             .app_data(web::Data::new(addr.clone()));
     }
+
+    fn get_plugin_dependencies(&self) -> Vec<String> {
+        vec![]
+    }
 }

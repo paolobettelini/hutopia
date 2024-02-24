@@ -2,6 +2,7 @@ use crate::{PluginHandler, SpaceConfig, LIB_EXTENSION, PLUGINS_FOLDER};
 use hutopia_database_space::db::*;
 use reqwest::Client;
 use serde_json::Value;
+use hutopia_plugin_server::IPlugin;
 
 pub(crate) struct ServerData {
     /// Database pool
@@ -21,10 +22,14 @@ impl ServerData {
         let relay_uri = config.server.relay.to_string();
         let plugin_handler = ServerData::get_plugin_handler();
 
-        Self {
+        let server_data = Self {
             /*db,*/ relay_uri,
             plugin_handler,
-        }
+        };
+
+        server_data.ensure_dependencies();
+
+        server_data
     }
 
     pub async fn auth_user(&self, username: &str, token: &str) -> bool {
@@ -71,5 +76,20 @@ impl ServerData {
         }
 
         plugin_handler
+    }
+
+    fn ensure_dependencies(&self) {
+        for (plugin_name, plugin_proxy) in self.plugin_handler.plugins.iter() {
+            let dependencies = plugin_proxy.get_plugin_dependencies();
+
+            for dependency in dependencies {
+                if !self.plugin_handler.plugins.contains_key(&dependency) {
+                    let msg = format!("Dependency \"{}\" for plugin \"{}\" is missing!", dependency, plugin_name);
+                    
+                    log::error!("{msg}");
+                    panic!("{msg}");
+                }
+            }
+        }
     }
 }

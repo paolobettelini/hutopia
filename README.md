@@ -72,3 +72,9 @@ it asks relay to sign a token contaning "spaceId + userId + expirationDateUnix",
 so tht the space can check the signature.
 Plugin are authenticated through the space server begin authenticated.
 The expiration date is 1 minute or something.
+
+# Resources
+
+- Dynamic plugins using FFI: https://adventures.michaelfbryan.com/posts/plugins-in-rust/
+- Implementing custom HTML element in WASM: https://github.com/gbj/custom-elements/
+- Actix Actors documentation: https://actix.rs/docs/actix/actor/
