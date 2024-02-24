@@ -1,5 +1,4 @@
 use actix::{Message, Recipient};
-use chat_plugin_protocol::uuid::Uuid;
 use chat_plugin_protocol::message::ProtocolMessage;
 
 #[derive(Message)]
@@ -10,24 +9,24 @@ pub struct WsMessage(pub ProtocolMessage); // Message to send to client
 #[rtype(result = "()")]
 pub struct Connect { // Client connect request
     pub addr: Recipient<WsMessage>,
-    pub id: Uuid,
+    pub username: String,
 }
 
 #[derive(Message)]
 #[rtype(result = "()")]
 pub struct Disconnect {
-    pub id: Uuid,
+    pub username: String,
 }
 
 #[derive(Message)]
 #[rtype(result = "()")] // Client message sent message
 pub struct ClientActorMessage {
-    pub id: Uuid,
+    pub username: String,
     pub msg: String,
 }
 
 #[derive(Message)]
 #[rtype(result = "()")] // Serve messages message
 pub struct ServeMessages {
-    pub id: Uuid,
+    pub username: String,
 }

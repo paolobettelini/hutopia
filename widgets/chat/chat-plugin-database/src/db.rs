@@ -39,8 +39,8 @@ impl Database {
         self.get_connection().run_pending_migrations(MIGRATIONS).unwrap();
     }
 
-    pub fn insert_message(&self, user_id: &Uuid, message_text: String) -> bool {
-        let new_msg = NewMessage { user_id, message_text };
+    pub fn insert_message(&self, username: &str, message_text: &str) -> bool {
+        let new_msg = NewMessage { username, message_text };
 
         messages::add_message(&mut self.get_connection(), new_msg)
     }

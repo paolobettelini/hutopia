@@ -83,8 +83,8 @@ impl ChatComponent {
 
                 if let ProtocolMessage::ClientBound(message) = message {
                     match message {
-                        ClientBoundPacket::ServeMsg(id, msg) => {
-                            let msg = format!("{:?}: {msg}", id.0);
+                        ClientBoundPacket::ServeMsg(username, msg) => {
+                            let msg = format!("{}: {msg}", username);
                             let txt_node = document.create_text_node(&msg);
             
                             msg_container.append_child(&txt_node).unwrap();
@@ -174,15 +174,6 @@ fn init_socket() -> WebSocket {
     let cloned_ws = ws.clone();
     let onopen_callback = Closure::<dyn FnMut()>::new(move || {
         console_log!("socket opened");
-
-        // Connect packet
-        let uuid = Uuid::new_v4();
-        console_log!("Generating UUID: {uuid}");
-
-        let ser = SerializableUuid(uuid);
-        let packet = ProtocolMessage::ServerBound(ServerBoundPacket::Connect(ser));
-        let bytes = packet.raw_bytes(&Settings::default()).unwrap();
-        let _ = cloned_ws.send_with_u8_array(&bytes);
 
         // Send QueryMsg packet
         let packet = ProtocolMessage::ServerBound(ServerBoundPacket::QueryMsg);

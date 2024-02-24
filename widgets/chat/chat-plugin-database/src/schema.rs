@@ -3,7 +3,7 @@
 diesel::table! {
     chat_message (id) {
         id -> Int4,
-        user_id -> Uuid,
+        username -> Text,
         message_text -> Text,
     }
 }

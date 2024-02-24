@@ -6,13 +6,13 @@ use serde_json::Value;
 use crate::*;
 use actix::AsyncContext;
 use actix::{fut, ActorContext, ContextFutureSpawner, WrapFuture};
-use chat_plugin_protocol::uuid::Uuid;
 use chat_plugin_protocol::protocol::{Parcel, Settings};
 use chat_plugin_protocol::message::*;
+use std::str::FromStr;
 
 /// Define HTTP actor
 struct WsConn {
-    id: Option<Uuid>,
+    username: String,
     chat: Addr<Chat>,
 }
 
@@ -20,13 +20,27 @@ impl Actor for WsConn {
     type Context = ws::WebsocketContext<Self>;
 
     fn started(&mut self, ctx: &mut Self::Context) {
-
+        // Initialize session
+        let addr = ctx.address();
+        self.chat
+            // Send connect msg to actor
+            .send(Connect {
+                addr: addr.recipient(),
+                username: self.username.clone(),
+            })
+            .into_actor(self)
+            .then(|res, _, ctx| {
+                match res {
+                    Ok(_res) => (),
+                    _ => ctx.stop(),
+                }
+                fut::ready(())
+            })
+            .wait(ctx);
     }
 
     fn stopping(&mut self, _: &mut Self::Context) -> Running {
-        if let Some(id) = self.id {
-            self.chat.do_send(Disconnect { id });
-        }
+        self.chat.do_send(Disconnect { username: self.username.clone() });
         Running::Stop
     }
 }
@@ -59,44 +73,15 @@ impl WsConn {
         match message {
             ServerBoundPacket::SendMsg(msg) => {
                 // Broadcast
-                if let Some(id) = self.id {
-                    println!("Received msg from: {}", id);
-                    self.chat.do_send(ClientActorMessage {
-                        id,
-                        msg,
-                    })
-                }
-            },
-            ServerBoundPacket::Connect(id) => {
-                let uuid = !id;
-                println!("Received connect from: {}", uuid);
-                let addr = ctx.address();
-
-                self.id = Some(uuid);
-
-                // Initialize session
-                let addr = ctx.address();
-                self.chat
-                    // Send connect msg to actor
-                    .send(Connect {
-                        addr: addr.recipient(),
-                        id: uuid,
-                    })
-                    .into_actor(self)
-                    .then(|res, _, ctx| {
-                        match res {
-                            Ok(_res) => (),
-                            _ => ctx.stop(),
-                        }
-                        fut::ready(())
-                    })
-                    .wait(ctx);
+                println!("Received msg from: {}", self.username);
+                self.chat.do_send(ClientActorMessage {
+                    username: self.username.clone(),
+                    msg,
+                })
             },
             ServerBoundPacket::Disconnect => {},
             ServerBoundPacket::QueryMsg => {
-                if let Some(id) = self.id {
-                    self.chat.do_send(ServeMessages { id })
-                }
+                self.chat.do_send(ServeMessages { username: self.username.clone() })
             },
         }
     }
@@ -117,14 +102,6 @@ pub async fn init_connection(
     stream: web::Payload,
     chat: Data<Addr<Chat>>,
 ) -> Result<HttpResponse, Error> {
-    use std::str::FromStr;
-    let handler = WsConn {
-        id: None,
-        chat: chat.get_ref().clone(),
-    };
-
-    println!("Received connection");
-
     // Auth
     let username = req.cookie("username").unwrap().value().to_string();
     let token = req.cookie("token").unwrap().value().to_string();
@@ -133,8 +110,18 @@ pub async fn init_connection(
     let response = client.post(&url).send().unwrap();
     let json: serde_json::Value = response.json().unwrap();
     let authenticated: bool = json.get("authenticated").and_then(|v| v.as_bool()).unwrap();
-    println!("chat plugin - authenticated: {}", authenticated);
 
-    let resp = ws::start(handler, &req, stream);
-    resp
+    
+    if authenticated {
+        let handler = WsConn {
+            username,
+            chat: chat.get_ref().clone(),
+        };
+
+        let resp = ws::start(handler, &req, stream);
+        resp
+    } else {
+        Ok(HttpResponse::Unauthorized().finish())
+    }
+
 }

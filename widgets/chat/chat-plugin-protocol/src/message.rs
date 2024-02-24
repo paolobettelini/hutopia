@@ -12,8 +12,7 @@ pub enum ProtocolMessage {
 #[protocol(discriminant = "integer")]
 pub enum ServerBoundPacket {
     SendMsg(String),
-    Connect(SerializableUuid),
-    Disconnect, // TODO ...
+    Disconnect, // TODO
     QueryMsg, // TODO date range and channel
 
 }
@@ -21,5 +20,5 @@ pub enum ServerBoundPacket {
 #[derive(Protocol, Debug, PartialEq)]
 #[protocol(discriminant = "integer")]
 pub enum ClientBoundPacket {
-    ServeMsg(SerializableUuid, String),
+    ServeMsg(String, String), // username, msg
 }
