@@ -123,15 +123,17 @@ pub async fn init_connection(
         chat: chat.get_ref().clone(),
     };
 
+    println!("Received connection");
+
     // Auth
-    //let username = req.cookie("username").unwrap().value().to_string();
-    //let token = req.cookie("token").unwrap().value().to_string();
-    //let url = format!("127.0.0.1:8080/internal/auth/{username}/{token}");
-    //let client = reqwest::blocking::Client::new();
-    //let response = client.post(&url).send().unwrap();
-    //let json: serde_json::Value = response.json().unwrap();
-    //let authenticated: bool = json.get("authenticated").and_then(|v| v.as_bool()).unwrap();
-    //println!("chat plugin - authenticated: {}", authenticated);
+    let username = req.cookie("username").unwrap().value().to_string();
+    let token = req.cookie("token").unwrap().value().to_string();
+    let url = format!("http://127.0.0.1:8080/internal/auth/{username}/{token}");
+    let client = reqwest::blocking::Client::new();
+    let response = client.post(&url).send().unwrap();
+    let json: serde_json::Value = response.json().unwrap();
+    let authenticated: bool = json.get("authenticated").and_then(|v| v.as_bool()).unwrap();
+    println!("chat plugin - authenticated: {}", authenticated);
 
     let resp = ws::start(handler, &req, stream);
     resp

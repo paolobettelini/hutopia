@@ -76,13 +76,6 @@ async fn main() -> std::io::Result<()> {
 
         app
     })
-    // IMPORTANT!
-    // The HttpServer normally has as many workers as available (https://docs.rs/actix-web/latest/actix_web/struct.HttpServer.html#worker-count)
-    // Thus, every plugin is initialized {cores} times, separating the instances (if the plugin uses
-    // an Arbiter, there will be multiple arbiters and the actors are also separated).
-    // So, I use just 1 thread for the HttpServer.
-    // `libloading::Library` cannot be shared between threads.
-    .workers(1)
     .bind(bind_address)?
     .run()
     .await?;
@@ -132,7 +125,6 @@ async fn internal_user_auth(
     req: HttpRequest,
 ) -> impl Responder {
     // Only allow requests from loopback address
-    // TODO: check if it works or use a guard::
     if !req.peer_addr().map_or(false, |remote| {
         remote.ip().to_string() == "127.0.0.1"
     }) {

@@ -4,7 +4,6 @@ use actix_web::web;
 use hutopia_plugin_server::*;
 use rust_embed::RustEmbed;
 use chat_plugin_database::db::Database;
-
 use actix_web::web::ServiceConfig;
 
 mod actors_messages;
@@ -50,17 +49,9 @@ impl IPlugin for ChatPlugin {
     }
 
     fn init(&self, cfg: &mut ServiceConfig) {
-        let config = config::get_config();
-
         // Init sessions handler actor
         let addr = Chat::start_in_arbiter(&self.arbiter.handle(), |_| {
-            // init db
-            let url = match std::env::var(config.plugin.db_connection_env) {
-                Ok(v) => v,
-                Err(e) => panic!("DB env variable not found")
-            };
-            let db = Database::new(url);
-            Chat::new(db, Default::default())
+            Chat::new()
         });
 
         // Plugin Websocket route
