@@ -134,18 +134,8 @@ async fn internal_user_auth(
 
     let (username, token) = (&path.0, &path.1);
 
-    // TODO check cache, otherwise do query
-    // HashMap<User, List<Token>>
-
-    // When we do this query, the token is consumated and removed from the relay,
-    // so it's important to cache this information for a minute, so that each plugin
-    // can authenticate the user. This also mean that plugin should authenticate the
-    // user immediately and you cannot dynamically load widgets in the space page.
     let authenticated = data.auth_user(username, token).await;
     log::info!("User is authenticated: {authenticated}");
-
-    // TODO Add to cache
-    // Todo: use 1 minute TimedCache
 
     let json = json!({
         "authenticated": authenticated

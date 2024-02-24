@@ -16,10 +16,8 @@ pub(crate) struct ServerData {
     /// Tokens used by the space to authenticate a user to its server.
     /// The space will ask this server for the token to see if it matches
     /// the one provided by the user.
-    /// <username, [Token]>
-    /// Although rare, users may connect to multiple servers at a time, so
-    /// a list is used, but an hash table is probably not worth.
-    pub space_auth_tokens: Arc<Mutex<HashMap<String, Vec<String>>>>,
+    /// <token, username>
+    pub space_auth_tokens: Arc<Mutex<HashMap<String, String>>>,
 }
 
 #[derive(Debug, Clone)]
@@ -81,33 +79,18 @@ impl ServerData {
         log::debug!("Adding unregistered space auth token to RAM {token}");
 
         let mut map = self.space_auth_tokens.lock().unwrap();
-
-        if let Some(vec) = map.get_mut(&username) {
-            // If the username exists, append the token to the vector
-            vec.push(token);
-        } else {
-            let mut new_vec = Vec::new();
-            new_vec.push(token);
-            map.insert(username, new_vec);
-        }
+        map.insert(token, username);
 
         // TODO: use a timed cache
     }
 
     pub fn take_space_auth_tokens(&self, username: &str, token: &str) -> bool {
         let mut map = self.space_auth_tokens.lock().unwrap();
-
-        if let Some(vec) = map.get_mut(username) {
-            if let Some(index) = vec.iter().position(|s| s == token) {
-                vec.remove(index);
-                // If the vector is empty after removal, remove the entry from the hashmap
-                if vec.is_empty() {
-                    map.remove(username);
-                }
-                return true;
-            }
+        
+        if let Some(user) = map.remove(token) {
+            user == username
+        } else {
+            false
         }
-
-        false
     }
 }
