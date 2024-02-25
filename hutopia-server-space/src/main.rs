@@ -65,7 +65,6 @@ async fn main() -> std::io::Result<()> {
                     .cookie_same_site(SameSite::Lax)
                     .build(),
             )
-            .service(serve_widget_file)
             .service(serve_space_file)
             .service(internal_user_auth)
             .app_data(server_data.clone())
@@ -83,27 +82,6 @@ async fn main() -> std::io::Result<()> {
     .await?;
 
     Ok(())
-}
-
-#[get("/widget/{widget_name}/file/{file_name:.+}")]
-async fn serve_widget_file(
-    plugin_handler: web::Data<PluginHandler>,
-    params: web::Path<(String, String)>,
-) -> impl Responder {
-    let widget_name = params.0.to_string();
-    let file_name = params.1.to_string();
-
-    // TODO: maybe directly register /widget/chat/file/{file} at boot
-
-    let content = plugin_handler
-        .plugins
-        .get(&widget_name)
-        .unwrap()
-        .get_file(&file_name);
-
-    HttpResponse::Ok()
-        .content_type(from_path(&file_name).first_or_octet_stream().as_ref())
-        .body(content)
 }
 
 #[get("/space_file/{file_name:.+}")]

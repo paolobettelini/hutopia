@@ -6,6 +6,7 @@ use rust_embed::RustEmbed;
 use actix_web::web::ServiceConfig;
 use actix_web::{HttpRequest, HttpResponse};
 use actix_web::Responder;
+use actix_web::get;
 
 mod config;
 use config::*;
@@ -34,15 +35,13 @@ pub(crate) fn handle_static_file(path: &str) -> Vec<u8> {
 pub struct ConsolePlugin;
 
 impl IPlugin for ConsolePlugin {
-    fn get_file(&self, file_name: &str) -> Vec<u8> {
-        handle_static_file(&file_name)
-    }
 
     fn init(&self, cfg: &mut ServiceConfig) {
         let path = format!("/widget/{}/ws", PLUGIN_ID);
         let route = web::post().to(send_console_command);
 
-        cfg.route(&path, route);
+        cfg.route(&path, route)
+            .service(serve_widget_file);
     }
 
     fn get_plugin_dependencies(&self) -> Vec<String> {
@@ -56,4 +55,16 @@ async fn send_console_command(
     req: HttpRequest,
 ) -> impl Responder {
     HttpResponse::Ok()
+}
+
+#[get("/widget/console/file/{filename:.+}")]
+async fn serve_widget_file(
+    filename: web::Path<String>,
+) -> impl Responder {
+    let filename = filename.to_string();
+    let content = handle_static_file(&filename);
+
+    HttpResponse::Ok()
+        .content_type(mime_guess::from_path(&filename).first_or_octet_stream().as_ref())
+        .body(content)
 }

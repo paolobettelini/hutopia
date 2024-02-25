@@ -5,6 +5,9 @@ use hutopia_plugin_server::*;
 use rust_embed::RustEmbed;
 use chat_plugin_database::db::Database;
 use actix_web::web::ServiceConfig;
+use actix_web::HttpResponse;
+use actix_web::Responder;
+use actix_web::get;
 
 mod actors_messages;
 mod chat;
@@ -44,10 +47,6 @@ pub struct ChatPlugin {
 }
 
 impl IPlugin for ChatPlugin {
-    fn get_file(&self, file_name: &str) -> Vec<u8> {
-        handle_static_file(&file_name)
-    }
-
     fn init(&self, cfg: &mut ServiceConfig) {
         // Init sessions handler actor
         let addr = Chat::start_in_arbiter(&self.arbiter.handle(), |_| {
@@ -59,10 +58,23 @@ impl IPlugin for ChatPlugin {
         let route = web::get().to(init_connection);
 
         cfg.route(&path, route)
+            .service(serve_widget_file)
             .app_data(web::Data::new(addr.clone()));
     }
 
     fn get_plugin_dependencies(&self) -> Vec<String> {
         vec![]
     }
+}
+
+#[get("/widget/chat/file/{filename:.+}")]
+async fn serve_widget_file(
+    filename: web::Path<String>,
+) -> impl Responder {
+    let filename = filename.to_string();
+    let content = handle_static_file(&filename);
+
+    HttpResponse::Ok()
+        .content_type(mime_guess::from_path(&filename).first_or_octet_stream().as_ref())
+        .body(content)
 }

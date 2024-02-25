@@ -102,9 +102,6 @@ pub struct PluginProxy {
 }
 
 impl IPlugin for PluginProxy {
-    fn get_file(&self, file_name: &str) -> Vec<u8> {
-        self.plugin.get_file(file_name)
-    }
 
     fn init(&self, cfg: &mut ServiceConfig) {
         self.plugin.init(cfg)
