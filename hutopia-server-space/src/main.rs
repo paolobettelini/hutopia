@@ -50,15 +50,15 @@ async fn main() -> std::io::Result<()> {
 
     let server_data = web::Data::new(ServerData::new(&config));
 
-    //#[cfg(debug_assertions)]
+    #[cfg(debug_assertions)]
     {
         start_server_with_plugins_watcher!(server_data, bind_address);
         // Watch for file changes in the "plugins/" folder
     }
 
-    //#[cfg(not(debug_assertions))]
+    #[cfg(not(debug_assertions))]
     {
-        //start_server(server_data, bind_address).await;
+        start_server(server_data, bind_address).await;
     }
 
     Ok(())
@@ -67,7 +67,7 @@ async fn main() -> std::io::Result<()> {
 async fn start_server(
     server_data: web::Data<ServerData>,
     bind_address: (String, u16),
-    /*#[cfg(debug_assertions)]*/ watcher_data: Arc<Mutex<WatcherData>>,
+    #[cfg(debug_assertions)] watcher_data: Arc<Mutex<WatcherData>>,
 ) {
     let server = HttpServer::new(move || {
         // `PluginHandler` is initialized for each thread since it is not thread safe.
@@ -110,7 +110,7 @@ async fn start_server(
     .unwrap()
     .run();
 
-    //#[cfg(debug_assertions)]
+    #[cfg(debug_assertions)]
     {
         // Update handle reference for the watcher to use
         let handle = server.handle();

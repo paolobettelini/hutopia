@@ -12,12 +12,14 @@ use std::time::SystemTime;
 /// Module to contain watcher related functions
 /// Whenever a file in the plugins/ folder is modified, the server is restarted
 
+#[cfg(debug_assertions)]
 #[derive(Default)]
 pub struct WatcherData {
     pub handle: Option<ServerHandle>,
     pub needs_restart: bool,
 }
 
+#[cfg(debug_assertions)]
 #[macro_export]
 macro_rules! start_server_with_plugins_watcher {
     ($server_data:expr, $bind_address:expr) => {
@@ -55,6 +57,7 @@ macro_rules! start_server_with_plugins_watcher {
     };
 }
 
+#[cfg(debug_assertions)]
 pub fn watcher_loop(
     inner_watcher_data: Arc<Mutex<WatcherData>>,
     rx: Receiver<Result<Event, notify::Error>>,
