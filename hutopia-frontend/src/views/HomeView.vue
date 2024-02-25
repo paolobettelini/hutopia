@@ -4,17 +4,8 @@ import LoginButton from '../components/LoginButton.vue';
 import postData from "@/utils/post.js";
 
 // TODO: put this stuff in a Component
+
 function loadServer(): void {
-  console.log("Authenticating user for space");
-
-  postData(`/genSpaceAuthToken`)
-    .then(response => response.json())
-    .then(json => {
-      loadIframe(json);
-    });
-}
-
-function loadIframe(json: any): void {
   const inputUrl = (document.getElementById('urlInput') as HTMLInputElement).value;
   const iframe = document.createElement('iframe');
 
@@ -26,12 +17,39 @@ function loadIframe(json: any): void {
     console.error('iframeContainer not found.');
   }
 
-  // Set username and token cookies for space authentication
-  let token = json.token;
-  let username = json.username;
-  iframe.contentWindow.document.cookie = `username=${username}; path=/`;
-  iframe.contentWindow.document.cookie = `token=${token}; path=/`;
+  const storedCookies = JSON.parse(localStorage.getItem(inputUrl) || '{}');
+  if (storedCookies && Date.now() < storedCookies.expiry) {
+    // If cookies exist in localStorage and not expired, use them
+    console.log("[SPACE AUTH] - Using cookie in local storage");
+    iframe.contentWindow.document.cookie = `username=${storedCookies.username}; path=/`;
+    iframe.contentWindow.document.cookie = `token=${storedCookies.token}; path=/`;
+    loadIframe(inputUrl, iframe);
+  } else {
+    // If cookies don't exist in localStorage or expired, do the postData query
+    console.log("[SPACE AUTH] - Generating token for auth from relay server");
+    postData(`/genSpaceAuthToken`)
+      .then(response => response.json())
+      .then(json => {
+        // Set username and token cookies for space authentication
+        let token = json.token;
+        let username = json.username;
+        iframe.contentWindow.document.cookie = `username=${username}; path=/`;
+        iframe.contentWindow.document.cookie = `token=${token}; path=/`;
 
+        // Store cookies in localStorage with expiration duration of 1 day
+        const expiry = Date.now() + 24 * 60 * 60 * 1000 - 10000; // 1 day
+        localStorage.setItem(inputUrl, JSON.stringify({ username, token, expiry }));
+
+        loadIframe(inputUrl, iframe);
+      });
+  }
+}
+
+// TODO: if the space doesn't authenticate you, it may be because the space restarted
+// and lost the token from its RAM, so in that case we should remove the cookie
+// from the local storage.
+
+function loadIframe(inputUrl: string, iframe: HTMLIFrameElement): void {
   iframe.src = inputUrl + '/space_file/index.html';
   iframe.width = '100%';
   iframe.height = '400px';

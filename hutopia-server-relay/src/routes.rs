@@ -217,8 +217,6 @@ async fn gen_space_auth_token(req: HttpRequest, data: web::Data<ServerData>) -> 
     let token = random_token();
     data.add_space_auth_token(user.username.clone(), token.clone());
 
-    log::info!("User {} now has token {}", &user.username, &token);
-
     let json = json!({
         "token": token,
         "username": user.username, // just for good measure
@@ -234,8 +232,6 @@ async fn check_space_auth_token(
     data: web::Data<ServerData>,
 ) -> impl Responder {
     let authenticated = data.take_space_auth_tokens(&path.0, &path.1);
-
-    log::info!("User {} has token {}: {authenticated}", &path.0, &path.1);
 
     let json = json!({
         "authenticated": authenticated

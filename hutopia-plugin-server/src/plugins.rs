@@ -51,6 +51,21 @@ impl PluginHandler {
 
         Ok(())
     }
+
+    pub fn ensure_dependencies(&self) {
+        for (plugin_name, plugin_proxy) in self.plugins.iter() {
+            let dependencies = plugin_proxy.get_plugin_dependencies();
+
+            for dependency in dependencies {
+                if !self.plugins.contains_key(&dependency) {
+                    let msg = format!("Dependency \"{}\" for plugin \"{}\" is missing!", dependency, plugin_name);
+                    
+                    log::error!("{msg}");
+                    panic!("{msg}");
+                }
+            }
+        }
+    }
 }
 
 struct PluginRegistrar {

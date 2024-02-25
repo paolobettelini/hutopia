@@ -12,11 +12,13 @@ pub(crate) struct ServerData {
     pub auth: GoogleAuthConfig,
     /// Users who are about to create their accounts in the /register page
     /// <Session token, Unregistered User>
+    // TODO: keep for only 1 hour
     pub unregistered_users: Arc<Mutex<HashMap<String, UnregisteredUser>>>,
     /// Tokens used by the space to authenticate a user to its server.
     /// The space will ask this server for the token to see if it matches
     /// the one provided by the user.
     /// <token, username>
+    // TODO: keep for only 5 minutes
     pub space_auth_tokens: Arc<Mutex<HashMap<String, String>>>,
 }
 
@@ -66,8 +68,6 @@ impl ServerData {
 
         let mut map = self.unregistered_users.lock().unwrap();
         map.insert(token, user);
-
-        // TODO: use a timed cache
     }
 
     pub fn take_unregistered_user(&self, token: String) -> Option<UnregisteredUser> {
@@ -80,8 +80,6 @@ impl ServerData {
 
         let mut map = self.space_auth_tokens.lock().unwrap();
         map.insert(token, username);
-
-        // TODO: use a timed cache
     }
 
     pub fn take_space_auth_tokens(&self, username: &str, token: &str) -> bool {

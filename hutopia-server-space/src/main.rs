@@ -37,12 +37,13 @@ async fn main() -> std::io::Result<()> {
     // init config
     let config: Box<SpaceConfig> = parse_toml_config("space.toml").unwrap();
     let bind_address = (config.server.address.clone(), config.server.port);
+    
+    let server_data = web::Data::new(ServerData::new(&config));
 
     HttpServer::new(move || {
-        // Server data (internally an Arc)
-        // Note, this cannot be created outside since PluginHandler
-        // is not thread-safe.
-        let server_data = web::Data::new(ServerData::new(&config));
+        // `PluginHandler` is initialized for each thread since it is not thread safe.
+        // Plugins must share data statically
+        let plugin_handler = web::Data::new(load_plugin_handler());
 
         let mut app = App::new()
             // Set CORS headers
@@ -67,10 +68,11 @@ async fn main() -> std::io::Result<()> {
             .service(serve_widget_file)
             .service(serve_space_file)
             .service(internal_user_auth)
-            .app_data(server_data.clone());
+            .app_data(server_data.clone())
+            .app_data(plugin_handler.clone());
 
         // Init plugins
-        for plugin in server_data.plugin_handler.plugins.values() {
+        for plugin in plugin_handler.plugins.values() {
             app = app.configure(|cfg| plugin.init(cfg));
         }
 
@@ -85,7 +87,7 @@ async fn main() -> std::io::Result<()> {
 
 #[get("/widget/{widget_name}/file/{file_name:.+}")]
 async fn serve_widget_file(
-    data: web::Data<ServerData>,
+    plugin_handler: web::Data<PluginHandler>,
     params: web::Path<(String, String)>,
 ) -> impl Responder {
     let widget_name = params.0.to_string();
@@ -93,8 +95,7 @@ async fn serve_widget_file(
 
     // TODO: maybe directly register /widget/chat/file/{file} at boot
 
-    let content = data
-        .plugin_handler
+    let content = plugin_handler
         .plugins
         .get(&widget_name)
         .unwrap()
@@ -142,4 +143,26 @@ async fn internal_user_auth(
     });
 
     HttpResponse::Ok().json(json)
+}
+
+fn load_plugin_handler() -> PluginHandler {
+    let mut plugin_handler = PluginHandler::new();
+
+    if let Ok(entries) = std::fs::read_dir(PLUGINS_FOLDER) {
+        for entry in entries.flatten() {
+            if let Ok(file_path) = entry.path().into_os_string().into_string() {
+                if file_path.ends_with(LIB_EXTENSION) {
+                    unsafe {
+                        plugin_handler
+                            .load(file_path)
+                            .expect("Plugin loading failed");
+                    }
+                }
+            }
+        }
+    }
+
+    plugin_handler.ensure_dependencies();
+
+    plugin_handler
 }
