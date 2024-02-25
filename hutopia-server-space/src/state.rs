@@ -1,8 +1,8 @@
 use crate::{PluginHandler, SpaceConfig, LIB_EXTENSION, PLUGINS_FOLDER};
 use hutopia_database_space::db::*;
+use hutopia_plugin_server::IPlugin;
 use reqwest::Client;
 use serde_json::Value;
-use hutopia_plugin_server::IPlugin;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
@@ -75,11 +75,10 @@ impl ServerData {
                 let mut map = self.auth_tokens.lock().unwrap();
                 map.insert(token.to_string(), username.to_string());
             }
-            
+
             authenticated
         } else {
             false
         }
     }
-
 }
