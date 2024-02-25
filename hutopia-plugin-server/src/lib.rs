@@ -1,6 +1,7 @@
 use actix_web::web::ServiceConfig;
 
 mod plugins;
+pub mod utils;
 pub use plugins::*;
 pub mod config;
 

@@ -3,6 +3,7 @@ use actix_web::{web, web::Data, Error, HttpRequest, HttpResponse};
 use actix_web_actors::ws;
 use reqwest::Client;
 use serde_json::Value;
+use hutopia_plugin_server::utils::*;
 use crate::*;
 use actix::AsyncContext;
 use actix::{fut, ActorContext, ContextFutureSpawner, WrapFuture};
@@ -103,25 +104,15 @@ pub async fn init_connection(
     chat: Data<Addr<Chat>>,
 ) -> Result<HttpResponse, Error> {
     // Auth
-    let username = req.cookie("username").unwrap().value().to_string();
-    let token = req.cookie("token").unwrap().value().to_string();
-    let url = format!("http://127.0.0.1:8080/internal/auth/{username}/{token}");
-    let client = reqwest::blocking::Client::new();
-    let response = client.post(&url).send().unwrap();
-    let json: serde_json::Value = response.json().unwrap();
-    let authenticated: bool = json.get("authenticated").and_then(|v| v.as_bool()).unwrap();
-
-    
-    if authenticated {
+    if let Some(username) = auth_user(&req) {
         let handler = WsConn {
             username,
             chat: chat.get_ref().clone(),
         };
-
+    
         let resp = ws::start(handler, &req, stream);
         resp
     } else {
         Ok(HttpResponse::Unauthorized().finish())
     }
-
 }

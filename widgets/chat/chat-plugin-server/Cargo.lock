@@ -861,8 +861,10 @@ dependencies = [
  "hutopia-utils",
  "libloading",
  "log",
+ "reqwest",
  "rustc_version",
  "serde",
+ "serde_json",
 ]
 
 [[package]]

@@ -2,6 +2,7 @@ use actix::Actor;
 use actix_rt::{Arbiter, System};
 use actix_web::web;
 use hutopia_plugin_server::*;
+use hutopia_plugin_server::utils::*;
 use rust_embed::RustEmbed;
 use actix_web::web::ServiceConfig;
 use actix_web::{HttpRequest, HttpResponse};
@@ -41,14 +42,14 @@ struct AdminUser {
 impl IPlugin for ConsolePlugin {
 
     fn init(&self, cfg: &mut ServiceConfig) {
-        let path = format!("/widget/{}/ws", PLUGIN_ID);
+        let path = format!("/widget/{}/cmd", PLUGIN_ID);
         let route = web::post().to(send_console_command);
 
         let config = config::get_config();
         let admin_user = AdminUser { username: config.plugin.admin_user.clone() };
 
         cfg.route(&path, route)
-            .service(serve_console_widget_file)
+            .service(serve_widget_file)
             .app_data(web::Data::new(admin_user));
     }
 
@@ -61,21 +62,31 @@ async fn send_console_command(
     //path: web::Path<(String, String)>,
     req: HttpRequest,
 ) -> impl Responder {
-    HttpResponse::Ok()
+    if let None = auth_user(&req) {
+        return HttpResponse::Unauthorized().finish();
+    }
+
+    // TODO execute command
+    
+    HttpResponse::Ok().finish()
 }
 
-#[get("/widget/console/file/{filename:.+}")]
-async fn serve_console_widget_file(
+#[get("/widget/console/file/index.js")]
+async fn serve_widget_file(
     admin_user: web::Data<AdminUser>,
-    filename: web::Path<String>,
+    req: HttpRequest,
 ) -> impl Responder {
-    // check if username is admin
-    let filename = filename.to_string();
+    // for some reason the REGEX gives a memory segfault
+    //let filename = filename.to_string();
+    let filename = String::from("index.js");
     let content = handle_static_file(&filename);
 
-    println!("TODO: check whether this guy is {}", &admin_user.username);
-
-    HttpResponse::Ok()
-        .content_type(mime_guess::from_path(&filename).first_or_octet_stream().as_ref())
-        .body(content)
+    if let Some(username) = auth_user(&req) {
+        HttpResponse::Ok()
+            .content_type(mime_guess::from_path(&filename).first_or_octet_stream().as_ref())
+            .body(content)
+    } else {
+        // Don't serve console file
+        HttpResponse::Ok().body(())
+    }
 }
