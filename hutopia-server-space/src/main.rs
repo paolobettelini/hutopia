@@ -1,11 +1,16 @@
 use actix_session::{
     config::CookieContentSecurity, storage::CookieSessionStore, SessionMiddleware,
 };
+use std::time::SystemTime;
+use std::sync::{Arc, Mutex};
+use std::sync::mpsc::channel;
+use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
 use actix_web::cookie::{Key, SameSite};
 use actix_web::{
     get, guard, middleware::DefaultHeaders, post, web, App, HttpRequest, HttpResponse, HttpServer,
     Responder,
 };
+use actix_web::dev::ServerHandle;
 use hutopia_plugin_server::*;
 use hutopia_utils::config::*;
 use mime_guess::from_path;
@@ -14,6 +19,9 @@ use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 use serde_json::json;
+use std::thread;
+use std::time::Duration;
+use futures::executor::block_on;
 
 mod config;
 mod init;
@@ -29,6 +37,12 @@ pub const LOG_ENV: &str = "RUST_LOG";
 #[global_allocator]
 static ALLOCATOR: System = System;
 
+#[derive(Default)]
+struct WatcherData {
+    handle: Option<ServerHandle>,
+    needs_restart: bool,
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     init_logger();
@@ -40,7 +54,73 @@ async fn main() -> std::io::Result<()> {
     
     let server_data = web::Data::new(ServerData::new(&config));
 
-    HttpServer::new(move || {
+    let watcher_data: Arc<Mutex<WatcherData>> = Arc::new(Mutex::new(Default::default()));
+    
+    // Watch for file changes in the "plugins/" folder
+    let (tx, rx) = channel();
+    let mut watcher = RecommendedWatcher::new(tx, Config::default()).unwrap();
+    let plugins_folder = Path::new("plugins");
+    watcher.watch(&plugins_folder, RecursiveMode::Recursive).unwrap();
+
+    let inner_watcher_data = watcher_data.clone();
+    thread::spawn(move || {
+        loop {
+            let mut last_current_time = SystemTime::now();
+
+            match rx.recv() {
+                Ok(e) => {
+                    // Don't restart the server multiple times
+                    // if a file change triggers multiple events
+                    let current_time = SystemTime::now();
+                    if current_time - Duration::from_secs(1) >= last_current_time {
+                        log::info!("Plugin file change detected, restarting server");
+                        
+                        { // set flag to true
+                            let mut data = inner_watcher_data.lock().unwrap();
+                            (*data).needs_restart = true;
+                        }
+
+                        // Restart server
+                        let data = inner_watcher_data.lock().unwrap();
+                        if let Some(data) = data.handle.as_ref().cloned() {
+                            // Stop server gracefully
+                            block_on(data.stop(false));
+                        }
+                    }
+
+                    last_current_time = current_time;
+                }
+                Err(e) => std::process::exit(0),
+            }
+        }
+    });
+
+    loop {
+        let needs_restart = {
+            let mut data = watcher_data.lock().unwrap();
+            let temp = (*data).needs_restart;
+            (*data).needs_restart = false;
+            // Returns the needs_restart value OR if the handle is None, that is
+            // when the server has not started for the first time.
+            temp || (*data).handle.is_none() 
+        };
+
+        if needs_restart {
+            start_server(server_data.clone(), bind_address.clone(), watcher_data.clone()).await;
+        } else {
+            std::process::exit(0);
+        }
+    }
+
+    Ok(())
+}
+
+async fn start_server(
+    server_data: web::Data<ServerData>,
+    bind_address: (String, u16),
+    watcher_data: Arc<Mutex<WatcherData>>,
+) {
+    let server = HttpServer::new(move || {
         // `PluginHandler` is initialized for each thread since it is not thread safe.
         // Plugins must share data statically
         let plugin_handler = web::Data::new(load_plugin_handler());
@@ -77,11 +157,19 @@ async fn main() -> std::io::Result<()> {
 
         app
     })
-    .bind(bind_address)?
-    .run()
-    .await?;
+    .bind(bind_address)
+    .unwrap()
+    .run();
 
-    Ok(())
+    { // Update handle reference
+        let handle = server.handle();
+        let mut data = watcher_data.lock().unwrap();
+        (*data).handle = Some(handle);
+    }
+
+    server
+        .await
+        .unwrap();
 }
 
 #[get("/space_file/{file_name:.+}")]
