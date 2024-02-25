@@ -34,14 +34,22 @@ pub(crate) fn handle_static_file(path: &str) -> Vec<u8> {
 #[derive(Debug)]
 pub struct ConsolePlugin;
 
+struct AdminUser {
+    username: String,
+}
+
 impl IPlugin for ConsolePlugin {
 
     fn init(&self, cfg: &mut ServiceConfig) {
         let path = format!("/widget/{}/ws", PLUGIN_ID);
         let route = web::post().to(send_console_command);
 
+        let config = config::get_config();
+        let admin_user = AdminUser { username: config.plugin.admin_user.clone() };
+
         cfg.route(&path, route)
-            .service(serve_widget_file);
+            .service(serve_console_widget_file)
+            .app_data(web::Data::new(admin_user));
     }
 
     fn get_plugin_dependencies(&self) -> Vec<String> {
@@ -50,7 +58,6 @@ impl IPlugin for ConsolePlugin {
 }
 
 async fn send_console_command(
-    //data: web::Data<ServerData>,
     //path: web::Path<(String, String)>,
     req: HttpRequest,
 ) -> impl Responder {
@@ -58,11 +65,15 @@ async fn send_console_command(
 }
 
 #[get("/widget/console/file/{filename:.+}")]
-async fn serve_widget_file(
+async fn serve_console_widget_file(
+    admin_user: web::Data<AdminUser>,
     filename: web::Path<String>,
 ) -> impl Responder {
+    // check if username is admin
     let filename = filename.to_string();
     let content = handle_static_file(&filename);
+
+    println!("TODO: check whether this guy is {}", &admin_user.username);
 
     HttpResponse::Ok()
         .content_type(mime_guess::from_path(&filename).first_or_octet_stream().as_ref())
